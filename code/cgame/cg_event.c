@@ -84,7 +84,6 @@ static void CG_Obituary( entityState_t *ent ) {
 	const char	*attackerInfo;
 	char		targetName[32];
 	char		attackerName[32];
-	gender_t	gender;
 	clientInfo_t	*ci;
 
 	target = ent->otherEntityNum;
@@ -154,43 +153,20 @@ static void CG_Obituary( entityState_t *ent ) {
 	}
 
 	if (attacker == target) {
-		gender = ci->gender;
 		switch (mod) {
 		case MOD_BALLOONY_SPLASH:
-			if ( gender == GENDER_FEMALE )
-				message = "tripped on her own Waterbomb";
-			else if ( gender == GENDER_NEUTER )
-				message = "tripped on its own Waterbomb";
-			else
-				message = "tripped on his own Waterbomb";
+		    message = "tripped on their own waterbomb";
 			break;
 		case MOD_BETTY_SPLASH:
-			if ( gender == GENDER_FEMALE )
-				message = "blew herself up";
-			else if ( gender == GENDER_NEUTER )
-				message = "blew itself up";
-			else
-				message = "blew himself up";
+		    message = "blew themselves up";
 			break;
 		case MOD_BUBBLEG_SPLASH:
-			if ( gender == GENDER_FEMALE )
-				message = "melted herself";
-			else if ( gender == GENDER_NEUTER )
-				message = "melted itself";
-			else
-				message = "melted himself";
+		    message = "melted themselves";
 			break;
 		case MOD_IMPERIUS_SPLASH:
 			message = "should have used a smaller gun";
 			break;
-		default:/*
-			if ( gender == GENDER_FEMALE )
-				message = "killed herself";
-			else if ( gender == GENDER_NEUTER )
-				message = "killed itself";
-			else
-				message = "killed himself";
-			break;*/
+		default:
 			message = "did the lemming thing";
 			break;
 		}
@@ -208,19 +184,12 @@ static void CG_Obituary( entityState_t *ent ) {
 		if ( cgs.gametype < GT_TEAM ) {
 			if(cgs.gametype==GT_LPS)
 			{
-				//bg_public.h(115):typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
-				const char *gender_strings[] = {"he", "she", "it", 0 };
-
-				gender = ci->gender;
-				if(gender>2 || gender<0) gender=2;
-
 				if(ent->generic1==0)
-					s = va("You fragged %s\n%s has no lives left.", targetName, gender_strings[gender]);
+					s = va("You fragged %s\nThey have no lives left.", targetName);
 				else if(ent->generic1==1)
-					s = va("You fragged %s\n%s has 1 live left.", targetName, gender_strings[gender]);
+					s = va("You fragged %s\nThey have 1 life left.", targetName);
 				else
-					s = va("You fragged %s\n%s has %i lives left.", targetName, gender_strings[gender], 
-						ent->generic1 );
+					s = va("You fragged %s\nThey have %i lives left.", targetName, ent->generic1 );
 			}
 			else
 				s = va("You fragged %s\n%s place with %i", targetName, 
