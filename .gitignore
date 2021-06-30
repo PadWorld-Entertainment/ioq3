@@ -1,6 +1,7 @@
 build
 Makefile.local
 /compile_commands.json
+/Makefile.local
 /.vscode
 /.cache
 /*.gz
