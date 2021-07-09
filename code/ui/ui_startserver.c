@@ -13,17 +13,18 @@ BGP_STARTSERVERMAPS
 BGP_STARTSERVERBOTS
 */
 
-#define STARTSERVER_FIGHT0 "menu/startserver/fight0"
-#define STARTSERVER_FIGHT1 "menu/startserver/fight1"
-#define STARTSERVER_ARROWLEFT0 "menu/startserver/arrowleft0"
-#define STARTSERVER_ARROWLEFT1 "menu/startserver/arrowleft1"
-#define STARTSERVER_ARROWRIGHT0 "menu/startserver/arrowright0"
-#define STARTSERVER_ARROWRIGHT1 "menu/startserver/arrowright1"
-#define STARTSERVER_BACK0 "menu/BtnBack0"
-#define STARTSERVER_BACK1 "menu/BtnBack1"
-#define STARTSERVER_SELECTBOTS0 "menu/startserver/selectbot0"
-#define STARTSERVER_SELECTBOTS1 "menu/startserver/selectbot1"
-#define GAMESERVER_UNKNOWNMAP "menu/art/unknownmap"
+#define FIGHT0 "menu/buttons/fight0"
+#define FIGHT1 "menu/buttons/fight1"
+#define ARROWLT0 "menu/arrows/headblu_lt0"
+#define ARROWLT1 "menu/arrows/headblu_lt1"
+#define ARROWRT0 "menu/arrows/headblu_rt0"
+#define ARROWRT1 "menu/arrows/headblu_rt1"
+#define SELECTBOTS0 "menu/buttons/selectbots0"
+#define SELECTBOTS1 "menu/buttons/selectbots1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+
+#define UNKNOWNMAP "menu/art/unknownmap"
 
 #define MAX_MAPROWS 3
 #define MAX_MAPCOLS 2
@@ -96,14 +97,14 @@ typedef struct {
 static startserver_t s_startserver;
 
 // NOTE: The different order is intentional, thus the remapping
-static const char *gametype_items[] = {
-	GAMETYPE_NAME(GT_SPRAYFFA), GAMETYPE_NAME(GT_SPRAY), GAMETYPE_NAME(GT_CTF),	 GAMETYPE_NAME(GT_BALLOON),
-	GAMETYPE_NAME(GT_LPS),		GAMETYPE_NAME(GT_FFA),	 GAMETYPE_NAME(GT_TEAM), NULL};
+static const char *gametype_items[] = {GAMETYPE_NAME(GT_SPRAYFFA), GAMETYPE_NAME(GT_SPRAY),		GAMETYPE_NAME(GT_CTF),
+									   GAMETYPE_NAME(GT_BALLOON),  GAMETYPE_NAME(GT_LPS),		GAMETYPE_NAME(GT_FFA),
+									   GAMETYPE_NAME(GT_TEAM),	   GAMETYPE_NAME(GT_FREEZETAG), NULL};
 
-static int gametype_remap[] = {GT_SPRAYFFA, GT_SPRAY, GT_CTF, GT_BALLOON, GT_LPS, GT_FFA, GT_TEAM};
+static int gametype_remap[] = {GT_SPRAYFFA, GT_SPRAY, GT_CTF, GT_BALLOON, GT_LPS, GT_FFA, GT_TEAM, GT_FREEZETAG};
 // NOTE: Maps g_gametype to gametype_items. Make sure these are defined for all GT_MAX_GAME_TYPE-1 gametypes
 //       and remap to something reasonable for gametypes that do not have an entry in gametype_items.
-static int gametype_remap2[] = {5, 5, 5, 0, 4, 6, 2, 1, 3};
+static int gametype_remap2[] = {5, 5, 5, 0, 4, 6, 2, 1, 3, 3};
 static const char *teamstrs[] = {"free", "Red", "Blue", "spectator", 0};
 
 // static void UI_ServerOptionsMenu( qboolean multiplayer );
@@ -143,9 +144,13 @@ static int GametypeBits(const char *string) {
 
 		if (Q_stricmp(token, "team") == 0) {
 			bits |= 1 << GT_TEAM;
+			bits |= 1 << GT_FREEZETAG;
 			continue;
 		}
-
+		if (Q_stricmp(token, GAMETYPE_NAME_SHORT(GT_FREEZETAG)) == 0) {
+			bits |= 1 << GT_FREEZETAG;
+			continue;
+		}
 		if (Q_stricmp(token, "ctf") == 0 || Q_stricmp(token, GAMETYPE_NAME_SHORT(GT_CTF)) == 0) {
 			bits |= 1 << GT_CTF;
 			continue;
@@ -682,17 +687,17 @@ static void StartServer_MenuInit(void) {
 		s_startserver.mappics[i].width = 128;
 		s_startserver.mappics[i].height = 96;
 		//		s_startserver.mappics[i].focuspic			= GAMESERVER_SELECTED;
-		s_startserver.mappics[i].errorpic = GAMESERVER_UNKNOWNMAP;
+		s_startserver.mappics[i].errorpic = UNKNOWNMAP;
 		s_startserver.mappics[i].generic.ownerdraw = StartServer_LevelshotDraw;
 	}
 
 	s_startserver.arrowleft.generic.type = MTYPE_BITMAP1024S;
-	s_startserver.arrowleft.x = (308 - 10 - 99);
+	s_startserver.arrowleft.x = (308 - 10 - 98);
 	s_startserver.arrowleft.y = 640;
-	s_startserver.arrowleft.w = 99;
+	s_startserver.arrowleft.w = 98;
 	s_startserver.arrowleft.h = 38;
-	s_startserver.arrowleft.shader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWLEFT0);
-	s_startserver.arrowleft.mouseovershader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWLEFT1);
+	s_startserver.arrowleft.shader = trap_R_RegisterShaderNoMip(ARROWLT0);
+	s_startserver.arrowleft.mouseovershader = trap_R_RegisterShaderNoMip(ARROWLT1);
 	s_startserver.arrowleft.generic.callback = StartServer_MenuEvent;
 	s_startserver.arrowleft.generic.id = ID_PREVPAGE;
 
@@ -701,17 +706,17 @@ static void StartServer_MenuInit(void) {
 	s_startserver.arrowright.y = 640;
 	s_startserver.arrowright.w = 98;
 	s_startserver.arrowright.h = 38;
-	s_startserver.arrowright.shader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWRIGHT0);
-	s_startserver.arrowright.mouseovershader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWRIGHT1);
+	s_startserver.arrowright.shader = trap_R_RegisterShaderNoMip(ARROWRT0);
+	s_startserver.arrowright.mouseovershader = trap_R_RegisterShaderNoMip(ARROWRT1);
 	s_startserver.arrowright.generic.callback = StartServer_MenuEvent;
 	s_startserver.arrowright.generic.id = ID_NEXTPAGE;
 
 	s_startserver.back.generic.type = MTYPE_BITMAP;
-	s_startserver.back.generic.name = STARTSERVER_BACK0;
+	s_startserver.back.generic.name = BACK0;
 	s_startserver.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
 	s_startserver.back.generic.callback = StartServer_MenuEvent;
 	s_startserver.back.generic.id = ID_STARTSERVERBACK;
-	s_startserver.back.focuspic = STARTSERVER_BACK1;
+	s_startserver.back.focuspic = BACK1;
 	s_startserver.back.generic.x = 8;
 	s_startserver.back.generic.y = 440;
 	s_startserver.back.width = 80;
@@ -804,24 +809,24 @@ static void StartServer_MenuInit(void) {
 
 	y += BIGCHAR_HEIGHT + 4;
 	s_startserver.selectbots.generic.type = MTYPE_BITMAP;
-	s_startserver.selectbots.generic.name = STARTSERVER_SELECTBOTS0;
+	s_startserver.selectbots.generic.name = SELECTBOTS0;
 	s_startserver.selectbots.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	s_startserver.selectbots.generic.callback = StartServer_MenuEvent;
 	s_startserver.selectbots.generic.id = ID_SELECTBOTS;
-	s_startserver.selectbots.focuspic = STARTSERVER_SELECTBOTS1;
-	s_startserver.selectbots.generic.x = OPTIONS_XPOS - 59;
+	s_startserver.selectbots.focuspic = SELECTBOTS1;
+	s_startserver.selectbots.generic.x = OPTIONS_XPOS - 70;
 	s_startserver.selectbots.generic.y = y;
-	s_startserver.selectbots.width = 118;
-	s_startserver.selectbots.height = 22;
+	s_startserver.selectbots.width = 140;
+	s_startserver.selectbots.height = 24;
 	s_startserver.selectbots.focuspicinstead = qtrue;
 
 	s_startserver.fight.generic.type = MTYPE_BITMAP1024S;
 	s_startserver.fight.x = 870; // 845;
-	s_startserver.fight.y = 655; // 658;
+	s_startserver.fight.y = 660; // 658;
 	s_startserver.fight.w = 135;
 	s_startserver.fight.h = 97;
-	s_startserver.fight.shader = trap_R_RegisterShaderNoMip(STARTSERVER_FIGHT0);
-	s_startserver.fight.mouseovershader = trap_R_RegisterShaderNoMip(STARTSERVER_FIGHT1);
+	s_startserver.fight.shader = trap_R_RegisterShaderNoMip(FIGHT0);
+	s_startserver.fight.mouseovershader = trap_R_RegisterShaderNoMip(FIGHT1);
 	s_startserver.fight.generic.callback = StartServer_MenuEvent;
 	s_startserver.fight.generic.id = ID_STARTSERVER;
 
@@ -880,20 +885,21 @@ void StartServer_Cache(void) {
 	const char *info;
 	char picname[MAX_QPATH];
 
-	trap_R_RegisterShaderNoMip(STARTSERVER_FIGHT0);
-	trap_R_RegisterShaderNoMip(STARTSERVER_FIGHT1);
-	trap_R_RegisterShaderNoMip(STARTSERVER_ARROWLEFT0);
-	trap_R_RegisterShaderNoMip(STARTSERVER_ARROWLEFT1);
-	trap_R_RegisterShaderNoMip(STARTSERVER_ARROWRIGHT0);
-	trap_R_RegisterShaderNoMip(STARTSERVER_ARROWRIGHT1);
-	trap_R_RegisterShaderNoMip(STARTSERVER_BACK0);
-	trap_R_RegisterShaderNoMip(STARTSERVER_BACK1);
-	trap_R_RegisterShaderNoMip(STARTSERVER_SELECTBOTS0);
-	trap_R_RegisterShaderNoMip(STARTSERVER_SELECTBOTS1);
-	trap_R_RegisterShaderNoMip(GAMESERVER_UNKNOWNMAP);
+	trap_R_RegisterShaderNoMip(FIGHT0);
+	trap_R_RegisterShaderNoMip(FIGHT1);
+	trap_R_RegisterShaderNoMip(ARROWLT0);
+	trap_R_RegisterShaderNoMip(ARROWLT1);
+	trap_R_RegisterShaderNoMip(ARROWRT0);
+	trap_R_RegisterShaderNoMip(ARROWRT1);
+	trap_R_RegisterShaderNoMip(SELECTBOTS0);
+	trap_R_RegisterShaderNoMip(SELECTBOTS1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
+
+	trap_R_RegisterShaderNoMip(UNKNOWNMAP);
 
 	for (i = 0; i < 10; i++)
-		s_startserver.mapNumbers[i] = trap_R_RegisterShaderNoMip(va("menu/startserver/%i", i));
+		s_startserver.mapNumbers[i] = trap_R_RegisterShaderNoMip(va("menu/numbers/%i", i));
 
 	s_startserver.nummaps = UI_GetNumArenas();
 
@@ -933,15 +939,13 @@ BOT SELECT MENU *****
 =============================================================================
 */
 
-#define BOTSELECT_BACK0 "menu/BtnBack0"
-#define BOTSELECT_BACK1 "menu/BtnBack1"
-#define BOTSELECT_ACCEPT0 "menu/art/accept_0"
-#define BOTSELECT_ACCEPT1 "menu/art/accept_1"
 #define BOTSELECT_SELECT "menu/art/opponents_select"
 #define BOTSELECT_SELECTED "menu/art/opponents_selected"
-#define BOTSELECT_ARROWS "menu/art/gs_arrows_0"
-#define BOTSELECT_ARROWSL "menu/art/gs_arrows_l"
-#define BOTSELECT_ARROWSR "menu/art/gs_arrows_r"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
+// BACK0, BACK1 used from start server menu
 
 #define PLAYERGRID_COLS 4 // 3
 #define PLAYERGRID_ROWS 4
@@ -1309,15 +1313,10 @@ UI_BotSelectMenu_Cache
 =================
 */
 void UI_BotSelectMenu_Cache(void) {
-	trap_R_RegisterShaderNoMip(BOTSELECT_BACK0);
-	trap_R_RegisterShaderNoMip(BOTSELECT_BACK1);
-	trap_R_RegisterShaderNoMip(BOTSELECT_ACCEPT0);
-	trap_R_RegisterShaderNoMip(BOTSELECT_ACCEPT1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
 	trap_R_RegisterShaderNoMip(BOTSELECT_SELECT);
 	trap_R_RegisterShaderNoMip(BOTSELECT_SELECTED);
-	trap_R_RegisterShaderNoMip(BOTSELECT_ARROWS);
-	trap_R_RegisterShaderNoMip(BOTSELECT_ARROWSL);
-	trap_R_RegisterShaderNoMip(BOTSELECT_ARROWSR);
 }
 
 /*
@@ -1442,7 +1441,7 @@ static void UI_BotSelectMenu_DrawBotIcon(void *self) {
 	{
 		if (!(Menu_ItemAtCursor(b->generic.parent) == b)) {
 			//		UI_DrawHandlePic( x, y, w, h, b->focusshader );
-			UI_DrawNamedPic(x, y, w + 8, h + 8, "menu/player/micon_shadow");
+			UI_DrawNamedPic(x, y, w + 8, h + 8, "menu/art/micon_shadow");
 		}
 
 		UI_DrawHandlePic(x, y, w, h, b->shader);
@@ -1512,12 +1511,12 @@ static void UI_BotSelectMenu_Init(void) {
 	}
 
 	botSelectInfo.arrowleft.generic.type = MTYPE_BITMAP1024S;
-	botSelectInfo.arrowleft.x = 352 - 20 - 99;
+	botSelectInfo.arrowleft.x = 352 - 20 - 98;
 	botSelectInfo.arrowleft.y = 640;
-	botSelectInfo.arrowleft.w = 99;
+	botSelectInfo.arrowleft.w = 98;
 	botSelectInfo.arrowleft.h = 38;
-	botSelectInfo.arrowleft.shader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWLEFT0);
-	botSelectInfo.arrowleft.mouseovershader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWLEFT1);
+	botSelectInfo.arrowleft.shader = trap_R_RegisterShaderNoMip(ARROWLT0);
+	botSelectInfo.arrowleft.mouseovershader = trap_R_RegisterShaderNoMip(ARROWLT1);
 	botSelectInfo.arrowleft.generic.callback = UI_BotSelectMenu_LeftEvent;
 	//	botSelectInfo.arrowleft.generic.id			= ID_PREVPAGE;
 
@@ -1526,8 +1525,8 @@ static void UI_BotSelectMenu_Init(void) {
 	botSelectInfo.arrowright.y = 640;
 	botSelectInfo.arrowright.w = 98;
 	botSelectInfo.arrowright.h = 38;
-	botSelectInfo.arrowright.shader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWRIGHT0);
-	botSelectInfo.arrowright.mouseovershader = trap_R_RegisterShaderNoMip(STARTSERVER_ARROWRIGHT1);
+	botSelectInfo.arrowright.shader = trap_R_RegisterShaderNoMip(ARROWRT0);
+	botSelectInfo.arrowright.mouseovershader = trap_R_RegisterShaderNoMip(ARROWRT1);
 	botSelectInfo.arrowright.generic.callback = UI_BotSelectMenu_RightEvent;
 	//	botSelectInfo.arrowright.generic.id			= ID_NEXTPAGE;
 
@@ -1557,23 +1556,22 @@ static void UI_BotSelectMenu_Init(void) {
 		botSelectInfo.selectedbotteams[i].generic.callback = UI_BotSelectMenu_SelectBotTeam;
 	}
 
-	y = y * 768 / 480;
 	botSelectInfo.arrowup.generic.type = MTYPE_BITMAP1024S;
 	botSelectInfo.arrowup.x = 1024 - 50;
-	botSelectInfo.arrowup.y = y; // 480-(10*MAX_SELECTLISTBOTS)-20;
+	botSelectInfo.arrowup.y = 362;
 	botSelectInfo.arrowup.w = 38;
-	botSelectInfo.arrowup.h = 100;
-	botSelectInfo.arrowup.shader = trap_R_RegisterShaderNoMip("menu/server/arrowup0");
-	botSelectInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip("menu/server/arrowup1");
+	botSelectInfo.arrowup.h = 98;
+	botSelectInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	botSelectInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	botSelectInfo.arrowup.generic.callback = UI_BotSelectMenu_ListUp;
 
 	botSelectInfo.arrowdown.generic.type = MTYPE_BITMAP1024S;
 	botSelectInfo.arrowdown.x = 1024 - 50;
-	botSelectInfo.arrowdown.y = y + (25.6f * MAX_SELECTLISTBOTS) - 99; // 480+20;
+	botSelectInfo.arrowdown.y = 495;
 	botSelectInfo.arrowdown.w = 38;
-	botSelectInfo.arrowdown.h = 99;
-	botSelectInfo.arrowdown.shader = trap_R_RegisterShaderNoMip("menu/server/arrowdown0");
-	botSelectInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip("menu/server/arrowdown1");
+	botSelectInfo.arrowdown.h = 98;
+	botSelectInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	botSelectInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	botSelectInfo.arrowdown.generic.callback = UI_BotSelectMenu_ListDown;
 
 	botSelectInfo.BotSkill.generic.type = MTYPE_SPINCONTROL;
@@ -1594,14 +1592,14 @@ static void UI_BotSelectMenu_Init(void) {
 	botSelectInfo.slotsleft.color = color_yellow;
 
 	botSelectInfo.back.generic.type = MTYPE_BITMAP;
-	botSelectInfo.back.generic.name = BOTSELECT_BACK0;
+	botSelectInfo.back.generic.name = BACK0;
 	botSelectInfo.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
 	botSelectInfo.back.generic.callback = UI_BotSelectMenu_BackEvent;
 	botSelectInfo.back.generic.x = 552;
 	botSelectInfo.back.generic.y = 440;
 	botSelectInfo.back.width = 80;
 	botSelectInfo.back.height = 40;
-	botSelectInfo.back.focuspic = BOTSELECT_BACK1;
+	botSelectInfo.back.focuspic = BACK1;
 
 	for (i = 0; i < MAX_MODELSPERPAGE; i++) {
 		Menu_AddItem(&botSelectInfo.menu, &botSelectInfo.pics[i]);

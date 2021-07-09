@@ -22,14 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 #include "ui_local.h"
 
-#define ART_BACK0 "menu/BtnBack0"
-#define ART_BACK1 "menu/BtnBack1"
-#define ART_FIGHT0 "menu/mods/load0"
-#define ART_FIGHT1 "menu/mods/load1"
-#define ART_ARROWUP0 "menu/mods/arrowup0"
-#define ART_ARROWUP1 "menu/mods/arrowup1"
-#define ART_ARROWDOWN0 "menu/mods/arrowdown0"
-#define ART_ARROWDOWN1 "menu/mods/arrowdown1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define FIGHT0 "menu/buttons/play_blu0"
+#define FIGHT1 "menu/buttons/play_blu1"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
 
 #define MAX_MODS 64
 #define NAMEBUFSIZE (MAX_MODS * 48)
@@ -94,6 +94,30 @@ static void UI_Mods_MenuEvent(void *ptr, int event) {
 		ScrollList_Key(&s_mods.list, K_DOWNARROW);
 		break;
 	}
+}
+
+/*
+=================
+UI_Mods_MenuKey
+=================
+*/
+static sfxHandle_t UI_Mods_MenuKey(int key) {
+
+	if (key == K_MWHEELUP) {
+		ScrollList_Key(&s_mods.list, K_UPARROW);
+	}
+	if (key == K_MWHEELDOWN) {
+		ScrollList_Key(&s_mods.list, K_DOWNARROW);
+	}
+
+	if (key == K_ENTER || key == K_KP_ENTER) {
+		trap_Cvar_Set("fs_game", s_mods.fs_gameList[s_mods.list.curvalue]);
+		trap_Cvar_Set("s_wop_restarted", "0"); // damit bei padmod->anderer mod->padmod kein falscher sound bleibt
+		trap_Cmd_ExecuteText(EXEC_APPEND, "vid_restart;");
+		UI_PopMenu();
+	}
+
+	return Menu_DefaultKey(&s_mods.menu, key);
 }
 
 /*
@@ -195,12 +219,13 @@ static void UI_Mods_MenuInit(void) {
 	UI_ModsMenu_Cache();
 
 	memset(&s_mods, 0, sizeof(mods_t));
+	s_mods.menu.key = UI_Mods_MenuKey;
 	s_mods.menu.wrapAround = qtrue;
 	s_mods.menu.fullscreen = qtrue;
 	s_mods.menu.bgparts = BGP_MODSBG | BGP_SIMPLEBG;
 
 	s_mods.back.generic.type = MTYPE_BITMAP;
-	s_mods.back.generic.name = ART_BACK0;
+	s_mods.back.generic.name = BACK0;
 	s_mods.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
 	s_mods.back.generic.x = 8;
 	s_mods.back.generic.y = 440;
@@ -208,7 +233,7 @@ static void UI_Mods_MenuInit(void) {
 	s_mods.back.generic.callback = UI_Mods_MenuEvent;
 	s_mods.back.width = 80;
 	s_mods.back.height = 40;
-	s_mods.back.focuspic = ART_BACK1;
+	s_mods.back.focuspic = BACK1;
 	s_mods.back.focuspicinstead = qtrue;
 
 	s_mods.go.generic.type = MTYPE_BITMAP1024S;
@@ -216,8 +241,8 @@ static void UI_Mods_MenuInit(void) {
 	s_mods.go.y = 350; // 633;
 	s_mods.go.w = 63;  // 184;
 	s_mods.go.h = 63;  // 113;
-	s_mods.go.shader = trap_R_RegisterShaderNoMip(ART_FIGHT0);
-	s_mods.go.mouseovershader = trap_R_RegisterShaderNoMip(ART_FIGHT1);
+	s_mods.go.shader = trap_R_RegisterShaderNoMip(FIGHT0);
+	s_mods.go.mouseovershader = trap_R_RegisterShaderNoMip(FIGHT1);
 	s_mods.go.generic.callback = UI_Mods_MenuEvent;
 	s_mods.go.generic.id = ID_GO;
 
@@ -226,8 +251,8 @@ static void UI_Mods_MenuInit(void) {
 	s_mods.arrowup.y = 240;
 	s_mods.arrowup.w = 38;
 	s_mods.arrowup.h = 98;
-	s_mods.arrowup.shader = trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	s_mods.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWUP1);
+	s_mods.arrowup.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	s_mods.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	s_mods.arrowup.generic.callback = UI_Mods_MenuEvent;
 	s_mods.arrowup.generic.id = ID_SCROLL_UP;
 
@@ -236,8 +261,8 @@ static void UI_Mods_MenuInit(void) {
 	s_mods.arrowdown.y = 432;
 	s_mods.arrowdown.w = 38;
 	s_mods.arrowdown.h = 98;
-	s_mods.arrowdown.shader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	s_mods.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	s_mods.arrowdown.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	s_mods.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	s_mods.arrowdown.generic.callback = UI_Mods_MenuEvent;
 	s_mods.arrowdown.generic.id = ID_SCROLL_DOWN;
 
@@ -266,14 +291,10 @@ UI_Mods_Cache
 =================
 */
 void UI_ModsMenu_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_BACK0);
-	trap_R_RegisterShaderNoMip(ART_BACK1);
-	trap_R_RegisterShaderNoMip(ART_FIGHT0);
-	trap_R_RegisterShaderNoMip(ART_FIGHT1);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
+	trap_R_RegisterShaderNoMip(FIGHT0);
+	trap_R_RegisterShaderNoMip(FIGHT1);
 }
 
 /*

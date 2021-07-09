@@ -25,8 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define SCOREBOARD_X (0)
 
-#define SB_HEADER 80
-#define SB_TOP (SB_HEADER + 20)
+#define SB_HEADER 74
+#define SB_TOP (100)
 
 // Where the status bar starts, so we don't overwrite it
 #define SB_STATUSBAR 310
@@ -100,6 +100,10 @@ static void CG_DrawClientScore(int y, score_t *score, float *color, float fade, 
 	iconx = SB_BOTICON_X + (SB_RATING_WIDTH / 2);
 	headx = SB_HEAD_X + (SB_RATING_WIDTH / 2);
 
+	// freeze icon indicating frozen player
+	if (CG_FreezeTag() && ci->powerups & (1 << PW_FREEZE)) {
+		CG_DrawPic(iconx, icony, lineHeight * 0.8, lineHeight * 0.8, cgs.media.freezeIconShader);
+	} else
 	// draw the handicap or bot skill marker (unless player has lolly)
 	if (ci->powerups & (1 << PW_REDFLAG)) {
 		if (cg_drawIcons.integer) {
@@ -342,7 +346,7 @@ qboolean CG_DrawOldScoreboard(void) {
 		s = va(S_COLOR_BLACK "Fragged by %s", cg.killerName);
 		w = (CG_DrawStrlen(s) * BIGCHAR_WIDTH);
 		x = ((SCREEN_WIDTH - w) / 2);
-		y = (SB_HEADER - 40);
+		y = (SB_TOP - 60);
 
 		CG_DrawStringExt(x, y, s, fadeColor, qfalse, qfalse, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0);
 	}
@@ -371,45 +375,60 @@ qboolean CG_DrawOldScoreboard(void) {
 
 			w = (CG_DrawStrlen(s) * BIGCHAR_WIDTH);
 			x = ((SCREEN_WIDTH - w) / 2);
-			y = (SB_HEADER - 20);
+			y = (SB_TOP - 40);
 			CG_DrawStringExt(x, y, s, fadeColor, qfalse, qfalse, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0);
 		}
 	} else {
 		// FIXME: Use some sort of team_t define/enum
 		if (cg.teamScores[0] == cg.teamScores[1]) {
-			s = va(S_COLOR_BLACK "Teams are tied at %i", cg.teamScores[0]);
+			if (CG_FreezeTag())
+				s = va(S_COLOR_BLACK "Teams are tied at %i rounds", cg.teamScores[0]);
+			else
+				s = va(S_COLOR_BLACK "Teams are tied at %i", cg.teamScores[0]);
 		} else if (cg.teamScores[0] >= cg.teamScores[1]) {
-			s = va(S_COLOR_RED "Red" S_COLOR_BLACK " leads " S_COLOR_RED "%i" S_COLOR_BLACK " to " S_COLOR_BLUE "%i",
-				   cg.teamScores[0], cg.teamScores[1]);
+			if (CG_FreezeTag())
+				s = va(S_COLOR_RED "Red" S_COLOR_BLACK " leads " S_COLOR_RED "%i" S_COLOR_BLACK " to " S_COLOR_BLUE
+								   "%i" S_COLOR_BLACK " rounds",
+					   cg.teamScores[0], cg.teamScores[1]);
+			else
+				s = va(S_COLOR_RED "Red" S_COLOR_BLACK " leads " S_COLOR_RED "%i" S_COLOR_BLACK " to " S_COLOR_BLUE
+								   "%i",
+					   cg.teamScores[0], cg.teamScores[1]);
 		} else {
-			s = va(S_COLOR_BLUE "Blue" S_COLOR_BLACK " leads " S_COLOR_BLUE "%i" S_COLOR_BLACK " to " S_COLOR_RED "%i",
-				   cg.teamScores[1], cg.teamScores[0]);
+			if (CG_FreezeTag())
+				s = va(S_COLOR_BLUE "Blue" S_COLOR_BLACK " leads " S_COLOR_BLUE "%i" S_COLOR_BLACK " to " S_COLOR_RED
+									"%i" S_COLOR_BLACK " rounds",
+					   cg.teamScores[1], cg.teamScores[0]);
+			else
+				s = va(S_COLOR_BLUE "Blue" S_COLOR_BLACK " leads " S_COLOR_BLUE "%i" S_COLOR_BLACK " to " S_COLOR_RED
+									"%i",
+					   cg.teamScores[1], cg.teamScores[0]);
 		}
 
 		w = (CG_DrawStrlen(s) * BIGCHAR_WIDTH);
 		x = ((SCREEN_WIDTH - w) / 2);
-		y = (SB_HEADER - 20);
+		y = (SB_TOP - 40);
 		CG_DrawStringExt(x, y, s, fadeColor, qfalse, qfalse, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0);
 	}
 
 	// scoreboard
 	y = SB_HEADER;
-
+	// better set x values manually since WoP uses individual header pictures, not a font set
 	if (cgs.gametype == GT_LPS) {
 		if (cgs.lpsflags & LPSF_PPOINTLIMIT) {
-			CG_DrawPic((SB_SCORE_X + (SB_RATING_WIDTH / 2)), y, 64, 20, cgs.media.scoreboardscore_lives);
+			CG_DrawPic(174, y, 80, 32, cgs.media.scoreboardScoreLives);
 		} else {
-			CG_DrawPic((SB_SCORE_X + (SB_RATING_WIDTH / 2)), y, 64, 20, cgs.media.scoreboardlivesleft);
+			CG_DrawPic(180, y, 64, 32, cgs.media.scoreboardLives);
 		}
 	}
 	// Personal scores are not important in team based games!
 	else if (cgs.gametype < GT_TEAM) {
-		CG_DrawPic((SB_SCORE_X + (SB_RATING_WIDTH / 2)), y, 64, 20, cgs.media.scoreboardScore);
+		CG_DrawPic(176, y, 64, 32, cgs.media.scoreboardScore);
 	}
 
-	CG_DrawPic((SB_PING_X - (SB_RATING_WIDTH / 2)), y, 64, 20, cgs.media.scoreboardPing);
-	CG_DrawPic((SB_TIME_X - (SB_RATING_WIDTH / 2)), y, 64, 20, cgs.media.scoreboardTime);
-	CG_DrawPic((SB_NAME_X - (SB_RATING_WIDTH / 2)), y, 64, 20, cgs.media.scoreboardName);
+	CG_DrawPic(264, y, 64, 32, cgs.media.scoreboardPing);
+	CG_DrawPic(342, y, 64, 32, cgs.media.scoreboardTime);
+	CG_DrawPic(412, y, 64, 32, cgs.media.scoreboardName);
 
 	y = SB_TOP;
 

@@ -41,22 +41,21 @@ MULTIPLAYER MENU (SERVER BROWSER)
 #define MAX_LEAGUELENGTH 28
 #define MAX_LISTBOXWIDTH 64
 
-// FIXME: Paths are horrible
-#define ART_BACK0 "menu/BtnBack0"
-#define ART_BACK1 "menu/BtnBack1"
-#define ART_SPECIFY0 "menu/server/specify0"
-#define ART_SPECIFY1 "menu/server/specify1"
-#define ART_REFRESH0 "menu/server/refresh0"
-#define ART_REFRESH1 "menu/server/refresh1"
-#define ART_CONNECT0 "menu/server/fight0"
-#define ART_CONNECT1 "menu/server/fight1"
-#define ART_ARROWS_UP0 "menu/server/arrowup0"
-#define ART_ARROWS_UP1 "menu/server/arrowup1"
-#define ART_ARROWS_DOWN0 "menu/server/arrowdown0"
-#define ART_ARROWS_DOWN1 "menu/server/arrowdown1"
-#define ART_UNKNOWNMAP "menu/art/unknownmap"
-#define ART_REMOVE0 "menu/server/delete0"
-#define ART_REMOVE1 "menu/server/delete1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define SPECIFY0 "menu/buttons/specify0"
+#define SPECIFY1 "menu/buttons/specify1"
+#define REFRESH0 "menu/buttons/refresh0"
+#define REFRESH1 "menu/buttons/refresh1"
+#define DELETE0 "menu/buttons/delete0"
+#define DELETE1 "menu/buttons/delete1"
+#define FIGHT0 "menu/buttons/fight0"
+#define FIGHT1 "menu/buttons/fight1"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
+#define UNKNOWNMAP "menu/art/unknownmap"
 
 #define ID_MASTER 10
 #define ID_GAMETYPE 11
@@ -109,6 +108,7 @@ static const char *servertype_items[] = {"All",
 										 GAMETYPE_NAME(GT_SPRAYFFA),
 										 GAMETYPE_NAME(GT_LPS),
 										 GAMETYPE_NAME(GT_TEAM),
+										 GAMETYPE_NAME(GT_FREEZETAG),
 										 GAMETYPE_NAME(GT_CTF),
 										 GAMETYPE_NAME(GT_SPRAY),
 										 GAMETYPE_NAME(GT_BALLOON),
@@ -117,17 +117,11 @@ static const char *servertype_items[] = {"All",
 static const char *sortkey_items[] = {"Server Name",   "Map Name", "Open Player Slots", "Game Type", "Ping Time",
 									  "Human Players", NULL};
 
-static char *gamenames[] = {GAMETYPE_NAME_SHORT(GT_FFA),
-							GAMETYPE_NAME_SHORT(GT_TOURNAMENT),
-							GAMETYPE_NAME_SHORT(GT_SINGLE_PLAYER),
-							GAMETYPE_NAME_SHORT(GT_SPRAYFFA),
-							GAMETYPE_NAME_SHORT(GT_LPS),
-							GAMETYPE_NAME_SHORT(GT_TEAM),
-							GAMETYPE_NAME_SHORT(GT_CTF),
-							GAMETYPE_NAME_SHORT(GT_SPRAY),
-							GAMETYPE_NAME_SHORT(GT_BALLOON),
-							GAMETYPE_NAME_SHORT(GT_MAX_GAME_TYPE),
-							NULL};
+static char *gamenames[] = {
+	GAMETYPE_NAME_SHORT(GT_FFA),	   GAMETYPE_NAME_SHORT(GT_TOURNAMENT),	  GAMETYPE_NAME_SHORT(GT_SINGLE_PLAYER),
+	GAMETYPE_NAME_SHORT(GT_SPRAYFFA),  GAMETYPE_NAME_SHORT(GT_LPS),			  GAMETYPE_NAME_SHORT(GT_TEAM),
+	GAMETYPE_NAME_SHORT(GT_FREEZETAG), GAMETYPE_NAME_SHORT(GT_CTF),			  GAMETYPE_NAME_SHORT(GT_SPRAY),
+	GAMETYPE_NAME_SHORT(GT_BALLOON),   GAMETYPE_NAME_SHORT(GT_MAX_GAME_TYPE), NULL};
 
 static char quake3worldMessage[] = "Visit worldofpadman.com - News, Community, Events, Files";
 
@@ -179,10 +173,10 @@ typedef struct {
 	menutext_s addFav;
 	menutext_s addAllFav;
 
-	menubitmap1024s_s remove;
 	menubitmap_s back;
-	menubitmap1024s_s refresh;
-	menubitmap1024s_s specify;
+	menubitmap_s refresh;
+	menubitmap_s specify;
+	menubitmap_s remove;
 	menubitmap1024s_s go;
 
 	pinglist_t pinglist[MAX_PINGREQUESTS];
@@ -447,7 +441,7 @@ static void ArenaServers_UpdateMenu(void) {
 	} else {
 		// no servers found
 		if (g_arenaservers.refreshservers) {
-			Q_strncpyz(g_arenaservers.status.string, "Scanning For Servers.", MAX_STATUSLENGTH);
+			Q_strncpyz(g_arenaservers.status.string, "Scanning for servers.", MAX_STATUSLENGTH);
 			g_arenaservers.statusbar.string = "Press SPACE to stop";
 
 			// disable controls during refresh
@@ -463,9 +457,9 @@ static void ArenaServers_UpdateMenu(void) {
 			g_arenaservers.go.generic.flags |= QMF_GRAYED;
 		} else {
 			if (g_arenaservers.numqueriedservers < 0) {
-				Q_strncpyz(g_arenaservers.status.string, "No Response From Masterserver.", MAX_STATUSLENGTH);
+				Q_strncpyz(g_arenaservers.status.string, "No response from master.", MAX_STATUSLENGTH);
 			} else {
-				Q_strncpyz(g_arenaservers.status.string, "No Servers Found.", MAX_STATUSLENGTH);
+				Q_strncpyz(g_arenaservers.status.string, "No servers found.", MAX_STATUSLENGTH);
 			}
 
 			// update status bar
@@ -1482,13 +1476,12 @@ static void ArenaServers_MenuInit(void) {
 	g_arenaservers.hideprivate.generic.x = 320;
 	g_arenaservers.hideprivate.generic.y = y;
 
-	y += (2 * SMALLCHAR_HEIGHT);
 	g_arenaservers.list.generic.type = MTYPE_SCROLLLIST;
 	g_arenaservers.list.generic.flags = QMF_HIGHLIGHT_IF_FOCUS;
 	g_arenaservers.list.generic.id = ID_LIST;
 	g_arenaservers.list.generic.callback = ArenaServers_Event;
 	g_arenaservers.list.generic.x = 50;
-	g_arenaservers.list.generic.y = y;
+	g_arenaservers.list.generic.y = 198;
 	g_arenaservers.list.width = MAX_LISTBOXWIDTH;
 	g_arenaservers.list.height = 11;
 	g_arenaservers.list.itemnames = (const char **)g_arenaservers.items;
@@ -1502,15 +1495,15 @@ static void ArenaServers_MenuInit(void) {
 	g_arenaservers.mappic.generic.y = 66;
 	g_arenaservers.mappic.width = 128;
 	g_arenaservers.mappic.height = 96;
-	g_arenaservers.mappic.errorpic = ART_UNKNOWNMAP;
+	g_arenaservers.mappic.errorpic = UNKNOWNMAP;
 
 	g_arenaservers.up.generic.type = MTYPE_BITMAP1024S;
 	g_arenaservers.up.x = 900;
 	g_arenaservers.up.y = 319;
 	g_arenaservers.up.w = 38;
-	g_arenaservers.up.h = 100;
-	g_arenaservers.up.shader = trap_R_RegisterShaderNoMip(ART_ARROWS_UP0);
-	g_arenaservers.up.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWS_UP1);
+	g_arenaservers.up.h = 98;
+	g_arenaservers.up.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	g_arenaservers.up.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	g_arenaservers.up.generic.callback = ArenaServers_Event;
 	g_arenaservers.up.generic.id = ID_SCROLL_UP;
 
@@ -1518,9 +1511,9 @@ static void ArenaServers_MenuInit(void) {
 	g_arenaservers.down.x = 900;
 	g_arenaservers.down.y = 496;
 	g_arenaservers.down.w = 38;
-	g_arenaservers.down.h = 99;
-	g_arenaservers.down.shader = trap_R_RegisterShaderNoMip(ART_ARROWS_DOWN0);
-	g_arenaservers.down.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWS_DOWN1);
+	g_arenaservers.down.h = 98;
+	g_arenaservers.down.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	g_arenaservers.down.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	g_arenaservers.down.generic.callback = ArenaServers_Event;
 	g_arenaservers.down.generic.id = ID_SCROLL_DOWN;
 
@@ -1540,23 +1533,13 @@ static void ArenaServers_MenuInit(void) {
 	g_arenaservers.statusbar.style = UI_CENTER | UI_SMALLFONT;
 	g_arenaservers.statusbar.color = text_color_normal;
 
-	g_arenaservers.remove.generic.type = MTYPE_BITMAP1024S;
-	g_arenaservers.remove.x = 810;
-	g_arenaservers.remove.y = 89;
-	g_arenaservers.remove.w = 133;
-	g_arenaservers.remove.h = 83;
-	g_arenaservers.remove.shader = trap_R_RegisterShaderNoMip(ART_REMOVE0);
-	g_arenaservers.remove.mouseovershader = trap_R_RegisterShaderNoMip(ART_REMOVE1);
-	g_arenaservers.remove.generic.callback = ArenaServers_Event;
-	g_arenaservers.remove.generic.id = ID_REMOVE;
-
 	g_arenaservers.addFav.generic.type = MTYPE_TEXTS;
 	g_arenaservers.addFav.fontHeight = 16.0f;
 	g_arenaservers.addFav.generic.flags = QMF_PULSEIFFOCUS;
 	g_arenaservers.addFav.generic.callback = ArenaServers_Event;
 	g_arenaservers.addFav.generic.id = ID_ADDTOFAV;
-	g_arenaservers.addFav.generic.x = 465;
-	g_arenaservers.addFav.generic.y = 20;
+	g_arenaservers.addFav.generic.x = 460;
+	g_arenaservers.addFav.generic.y = 32;
 	g_arenaservers.addFav.string = "Add to Favorites";
 	g_arenaservers.addFav.style = UI_SMALLFONT;
 	g_arenaservers.addFav.color = color_orange;
@@ -1567,15 +1550,15 @@ static void ArenaServers_MenuInit(void) {
 	g_arenaservers.addAllFav.generic.flags = QMF_PULSEIFFOCUS;
 	g_arenaservers.addAllFav.generic.callback = ArenaServers_Event;
 	g_arenaservers.addAllFav.generic.id = ID_ADDALLTOFAV;
-	g_arenaservers.addAllFav.generic.x = 465;
-	g_arenaservers.addAllFav.generic.y = 40;
+	g_arenaservers.addAllFav.generic.x = 460;
+	g_arenaservers.addAllFav.generic.y = 48;
 	g_arenaservers.addAllFav.string = "Add all to Favorites";
 	g_arenaservers.addAllFav.style = UI_SMALLFONT;
 	g_arenaservers.addAllFav.color = color_orange;
 	g_arenaservers.addAllFav.focuscolor = color_red;
 
 	g_arenaservers.back.generic.type = MTYPE_BITMAP;
-	g_arenaservers.back.generic.name = ART_BACK0;
+	g_arenaservers.back.generic.name = BACK0;
 	g_arenaservers.back.generic.flags = (QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS);
 	g_arenaservers.back.generic.callback = ArenaServers_Event;
 	g_arenaservers.back.generic.id = ID_BACK;
@@ -1583,35 +1566,51 @@ static void ArenaServers_MenuInit(void) {
 	g_arenaservers.back.generic.y = 440;
 	g_arenaservers.back.width = 80;
 	g_arenaservers.back.height = 40;
-	g_arenaservers.back.focuspic = ART_BACK1;
+	g_arenaservers.back.focuspic = BACK1;
 
-	g_arenaservers.specify.generic.type = MTYPE_BITMAP1024S;
-	g_arenaservers.specify.x = 360;
-	g_arenaservers.specify.y = 674;
-	g_arenaservers.specify.w = 120;
-	g_arenaservers.specify.h = 60;
-	g_arenaservers.specify.shader = trap_R_RegisterShaderNoMip(ART_SPECIFY0);
-	g_arenaservers.specify.mouseovershader = trap_R_RegisterShaderNoMip(ART_SPECIFY1);
+	g_arenaservers.specify.generic.type = MTYPE_BITMAP;
+	g_arenaservers.specify.generic.name = SPECIFY0;
+	g_arenaservers.specify.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	g_arenaservers.specify.generic.callback = ArenaServers_Event;
 	g_arenaservers.specify.generic.id = ID_SPECIFY;
+	g_arenaservers.specify.generic.x = 120;
+	g_arenaservers.specify.generic.y = 420;
+	g_arenaservers.specify.width = 120;
+	g_arenaservers.specify.height = 40;
+	g_arenaservers.specify.focuspic = SPECIFY1;
+	g_arenaservers.specify.focuspicinstead = qtrue;
 
-	g_arenaservers.refresh.generic.type = MTYPE_BITMAP1024S;
-	g_arenaservers.refresh.x = 530;
-	g_arenaservers.refresh.y = 674;
-	g_arenaservers.refresh.w = 120;
-	g_arenaservers.refresh.h = 60;
-	g_arenaservers.refresh.shader = trap_R_RegisterShaderNoMip(ART_REFRESH0);
-	g_arenaservers.refresh.mouseovershader = trap_R_RegisterShaderNoMip(ART_REFRESH1);
+	g_arenaservers.refresh.generic.type = MTYPE_BITMAP;
+	g_arenaservers.refresh.generic.name = REFRESH0;
+	g_arenaservers.refresh.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	g_arenaservers.refresh.generic.callback = ArenaServers_Event;
 	g_arenaservers.refresh.generic.id = ID_REFRESH;
+	g_arenaservers.refresh.generic.x = 260;
+	g_arenaservers.refresh.generic.y = 420;
+	g_arenaservers.refresh.width = 120;
+	g_arenaservers.refresh.height = 40;
+	g_arenaservers.refresh.focuspic = REFRESH1;
+	g_arenaservers.refresh.focuspicinstead = qtrue;
+
+	g_arenaservers.remove.generic.type = MTYPE_BITMAP;
+	g_arenaservers.remove.generic.name = DELETE0;
+	g_arenaservers.remove.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
+	g_arenaservers.remove.generic.callback = ArenaServers_Event;
+	g_arenaservers.remove.generic.id = ID_REMOVE;
+	g_arenaservers.remove.generic.x = 400;
+	g_arenaservers.remove.generic.y = 420;
+	g_arenaservers.remove.width = 120;
+	g_arenaservers.remove.height = 40;
+	g_arenaservers.remove.focuspic = DELETE1;
+	g_arenaservers.remove.focuspicinstead = qtrue;
 
 	g_arenaservers.go.generic.type = MTYPE_BITMAP1024S;
-	g_arenaservers.go.x = 865;
-	g_arenaservers.go.y = 658;
+	g_arenaservers.go.x = 870;
+	g_arenaservers.go.y = 660;
 	g_arenaservers.go.w = 135;
 	g_arenaservers.go.h = 97;
-	g_arenaservers.go.shader = trap_R_RegisterShaderNoMip(ART_CONNECT0);
-	g_arenaservers.go.mouseovershader = trap_R_RegisterShaderNoMip(ART_CONNECT1);
+	g_arenaservers.go.shader = trap_R_RegisterShaderNoMip(FIGHT0);
+	g_arenaservers.go.mouseovershader = trap_R_RegisterShaderNoMip(FIGHT1);
 	g_arenaservers.go.generic.callback = ArenaServers_Event;
 	g_arenaservers.go.generic.id = ID_CONNECT;
 
@@ -1633,11 +1632,12 @@ static void ArenaServers_MenuInit(void) {
 	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.addFav);
 	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.addAllFav);
 
-	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.remove);
-	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.back);
 	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.specify);
 	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.refresh);
+	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.remove);
 	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.go);
+
+	Menu_AddItem(&g_arenaservers.menu, (void *)&g_arenaservers.back);
 
 	ArenaServers_LoadFavorites();
 
@@ -1678,19 +1678,17 @@ ArenaServers_Cache
 =================
 */
 void ArenaServers_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_BACK0);
-	trap_R_RegisterShaderNoMip(ART_BACK1);
-	trap_R_RegisterShaderNoMip(ART_SPECIFY0);
-	trap_R_RegisterShaderNoMip(ART_SPECIFY1);
-	trap_R_RegisterShaderNoMip(ART_REFRESH0);
-	trap_R_RegisterShaderNoMip(ART_REFRESH1);
-	trap_R_RegisterShaderNoMip(ART_CONNECT0);
-	trap_R_RegisterShaderNoMip(ART_CONNECT1);
-	trap_R_RegisterShaderNoMip(ART_ARROWS_UP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWS_UP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWS_DOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWS_DOWN1);
-	trap_R_RegisterShaderNoMip(ART_UNKNOWNMAP);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
+	trap_R_RegisterShaderNoMip(SPECIFY0);
+	trap_R_RegisterShaderNoMip(SPECIFY1);
+	trap_R_RegisterShaderNoMip(REFRESH0);
+	trap_R_RegisterShaderNoMip(REFRESH1);
+	trap_R_RegisterShaderNoMip(DELETE0);
+	trap_R_RegisterShaderNoMip(DELETE1);
+	trap_R_RegisterShaderNoMip(FIGHT0);
+	trap_R_RegisterShaderNoMip(FIGHT1);
+	trap_R_RegisterShaderNoMip(UNKNOWNMAP);
 
 	if (!*global_names[0]) {
 		int index;

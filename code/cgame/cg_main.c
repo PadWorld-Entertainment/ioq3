@@ -96,6 +96,7 @@ vmCvar_t cg_drawAmmoWarning;
 vmCvar_t cg_drawCrosshair;
 vmCvar_t cg_drawCrosshairNames;
 vmCvar_t cg_drawRewards;
+vmCvar_t cg_fovAspectAdjust;
 vmCvar_t cg_crosshairSize;
 vmCvar_t cg_crosshairX;
 vmCvar_t cg_crosshairY;
@@ -196,7 +197,14 @@ vmCvar_t cg_drawBBox;
 
 vmCvar_t cg_ambient;
 
+vmCvar_t cg_chatHeight;
+vmCvar_t cg_drawChatIcon;
+
 vmCvar_t cg_icons;
+
+// freezetag
+vmCvar_t cg_ft_thawerIconX;
+vmCvar_t cg_ft_thawerIconY;
 
 typedef struct {
 	vmCvar_t *vmCvar;
@@ -224,6 +232,7 @@ static cvarTable_t cvarTable[] = {	   // bk001129
 	{&cg_drawCrosshair, "cg_drawCrosshair", "1", CVAR_ARCHIVE},
 	{&cg_drawCrosshairNames, "cg_drawCrosshairNames", "1", CVAR_ARCHIVE},
 	{&cg_drawRewards, "cg_drawRewards", "1", CVAR_ARCHIVE},
+	{&cg_fovAspectAdjust, "cg_fovAspectAdjust", "0", CVAR_ARCHIVE},
 	{&cg_crosshairSize, "cg_crosshairSize", "24", CVAR_ARCHIVE},
 	{&cg_crosshairHealth, "cg_crosshairHealth", "0", CVAR_ARCHIVE},
 	{&cg_crosshairX, "cg_crosshairX", "0", CVAR_ARCHIVE},
@@ -323,6 +332,14 @@ static cvarTable_t cvarTable[] = {	   // bk001129
 
 	{&cg_ambient, "cg_ambient", "1", CVAR_ARCHIVE},
 
+	{&cg_chatHeight, "cg_chatHeight", "4", CVAR_ARCHIVE},
+	{&cg_drawChatIcon, "cg_drawChatIcon", "1", CVAR_ARCHIVE},
+
+	// freezetag
+	{&cg_ft_thawerIconX, "cg_FT_thawerIconX", "320", CVAR_ARCHIVE},
+	{&cg_ft_thawerIconY, "cg_FT_thawerIconY", "290", CVAR_ARCHIVE},
+
+	// Should match ICON_ALL
 	{&cg_icons, "cg_icons", XSTRING(ICON_ALL), CVAR_ARCHIVE}};
 
 static const int cvarTableSize = ARRAY_LEN(cvarTable);
@@ -791,8 +808,8 @@ static void CG_RegisterSounds(void) {
 
 	cgs.media.noAmmoSound = trap_S_RegisterSound("sounds/weapons/noammo", qfalse);
 
-	cgs.media.talkSound = trap_S_RegisterSound("sounds/player/talk", qfalse);
-	cgs.media.landSound = trap_S_RegisterSound("sounds/player/land", qfalse);
+	cgs.media.talkSound = trap_S_RegisterSound("sound/player/talk", qfalse);
+	cgs.media.landSound = trap_S_RegisterSound("sound/player/land", qfalse);
 
 	cgs.media.hitSound = trap_S_RegisterSound("sounds/hit", qfalse);
 
@@ -800,9 +817,9 @@ static void CG_RegisterSounds(void) {
 	cgs.media.humiliationSound = trap_S_RegisterSound("sounds/awards/padkiller", qtrue);
 	cgs.media.padstarSound = trap_S_RegisterSound("sounds/awards/padstar", qtrue);
 
-	cgs.media.watrInSound = trap_S_RegisterSound("sounds/player/water_in", qfalse);
-	cgs.media.watrOutSound = trap_S_RegisterSound("sounds/player/water_out", qfalse);
-	cgs.media.watrUnSound = trap_S_RegisterSound("sounds/player/water_under", qfalse);
+	cgs.media.watrInSound = trap_S_RegisterSound("sound/player/water_in", qfalse);
+	cgs.media.watrOutSound = trap_S_RegisterSound("sound/player/water_out", qfalse);
+	cgs.media.watrUnSound = trap_S_RegisterSound("sound/player/water_under", qfalse);
 
 	cgs.media.jumpPadSound = trap_S_RegisterSound("sounds/world/jumppad", qfalse);
 	cgs.media.DropCartridgeSound = trap_S_RegisterSound("sounds/weapons/ammo/spraypistol/drop", qfalse);
@@ -811,23 +828,26 @@ static void CG_RegisterSounds(void) {
 	CG_ChangeLoadingProgress(0.4f);
 
 	for (i = 0; i < 4; i++) {
-		Com_sprintf(name, sizeof(name), "sounds/player/footsteps/step%i", (i + 1));
+		Com_sprintf(name, sizeof(name), "sound/player/footsteps/step%i", (i + 1));
 		cgs.media.footsteps[FOOTSTEP_NORMAL][i] = trap_S_RegisterSound(name, qfalse);
 
-		Com_sprintf(name, sizeof(name), "sounds/player/footsteps/boot%i", (i + 1));
-		cgs.media.footsteps[FOOTSTEP_BOOT][i] = trap_S_RegisterSound(name, qfalse);
+		Com_sprintf(name, sizeof(name), "sound/player/footsteps/spurs%i", (i + 1));
+		cgs.media.footsteps[FOOTSTEP_SPURS][i] = trap_S_RegisterSound(name, qfalse);
 
-		/*		Com_sprintf (name, sizeof(name), "sounds/player/footsteps/flesh%i", i+1);
-				cgs.media.footsteps[FOOTSTEP_FLESH][i] = trap_S_RegisterSound (name, qfalse);
+		Com_sprintf (name, sizeof(name), "sound/player/footsteps/flesh%i", i + 1);
+		cgs.media.footsteps[FOOTSTEP_FLESH][i] = trap_S_RegisterSound (name, qfalse);
 
-				Com_sprintf (name, sizeof(name), "sounds/player/footsteps/mech%i", i+1);
+		/*		Com_sprintf (name, sizeof(name), "sounds/player/footsteps/mech%i", i+1);
 				cgs.media.footsteps[FOOTSTEP_MECH][i] = trap_S_RegisterSound (name, qfalse);
 
 				Com_sprintf (name, sizeof(name), "sounds/player/footsteps/energy%i", i+1);
 				cgs.media.footsteps[FOOTSTEP_ENERGY][i] = trap_S_RegisterSound (name, qfalse);
 		*/
-		Com_sprintf(name, sizeof(name), "sounds/player/footsteps/splash%i", (i + 1));
+		Com_sprintf(name, sizeof(name), "sound/player/footsteps/splash%i", (i + 1));
 		cgs.media.footsteps[FOOTSTEP_SPLASH][i] = trap_S_RegisterSound(name, qfalse);
+
+		Com_sprintf(name, sizeof(name), "sound/player/footsteps/wade%i", (i + 1));
+		cgs.media.footsteps[FOOTSTEP_WADE][i] = trap_S_RegisterSound(name, qfalse);
 
 		Com_sprintf(name, sizeof(name), "sounds/player/footsteps/clank%i", (i + 1));
 		cgs.media.footsteps[FOOTSTEP_METAL][i] = trap_S_RegisterSound(name, qfalse);
@@ -925,31 +945,39 @@ static void CG_RegisterGraphics(void) {
 		cgs.media.botSkillShaders[i] = trap_R_RegisterShader(va("menu/art/skill%i", (i + 1)));
 	}
 
-	cgs.media.BloodScreenShader = trap_R_RegisterShaderNoMip("blood_screen");
-	cgs.media.BerserkerScreenShader = trap_R_RegisterShaderNoMip("berserker_screen");
-	cgs.media.WetScreenShader = trap_R_RegisterShaderNoMip("wet_screen");
+	cgs.media.BloodScreenShader = trap_R_RegisterShaderNoMip("gfx/screen/damage");
+	cgs.media.BerserkerScreenShader = trap_R_RegisterShaderNoMip("gfx/screen/puppet");
+	cgs.media.WetScreenShader = trap_R_RegisterShaderNoMip("gfx/screen/wet");
 
 	cgs.media.deferShader = trap_R_RegisterShaderNoMip("gfx/2d/defer");
 
-	cgs.media.scoreboardBG = trap_R_RegisterShaderNoMip("scoreboard/bg");
-	cgs.media.scoreboardName = trap_R_RegisterShaderNoMip("menu/tab/name");
-	cgs.media.scoreboardPing = trap_R_RegisterShaderNoMip("menu/tab/ping");
-	cgs.media.scoreboardScore = trap_R_RegisterShaderNoMip("menu/tab/score");
-	cgs.media.scoreboardTime = trap_R_RegisterShaderNoMip("menu/tab/time");
-	cgs.media.voiceIcon = trap_R_RegisterShaderNoMip("hud/voiceIcon");
+	cgs.media.scoreboardBG = trap_R_RegisterShaderNoMip("menu/bg/scoreboard");
+	cgs.media.scoreboardName = trap_R_RegisterShaderNoMip("menu/headers/name");
+	cgs.media.scoreboardPing = trap_R_RegisterShaderNoMip("menu/headers/ping");
+	cgs.media.scoreboardScore = trap_R_RegisterShaderNoMip("menu/headers/score");
+	cgs.media.scoreboardTime = trap_R_RegisterShaderNoMip("menu/headers/time");
+	cgs.media.voiceIcon = trap_R_RegisterShaderNoMip("hud/hint_voicechat");
 
-	cgs.media.healthstationIcon = trap_R_RegisterShaderNoMip("icons/healthstation");
+	if (cgs.gametype == GT_FREEZETAG) {
+		cgs.media.FreezeScreenShader = trap_R_RegisterShaderNoMip("gfx/screen/ice");
+		cgs.media.freezeIconShader = trap_R_RegisterShader("icons/hint_freeze");
+		cgs.media.snowMarkShader = trap_R_RegisterShader("gfx/damage/snow_mrk");
+		cgs.media.thawIcon = trap_R_RegisterShader("icons/hint_thaw");
+		cgs.media.iceblockModel = trap_R_RegisterModel("models/iceblock");
+	}
+
+	cgs.media.healthstationIcon = trap_R_RegisterShaderNoMip("icons/hint_healthstation");
 
 	if (cgs.gametype == GT_LPS || cg_buildScript.integer) {
-		cgs.media.scoreboardlivesleft = trap_R_RegisterShaderNoMip("menu/tab/lives");
-		cgs.media.scoreboardscore_lives = trap_R_RegisterShaderNoMip("menu/tab/score_lives");
+		cgs.media.scoreboardLives = trap_R_RegisterShaderNoMip("menu/headers/lives");
+		cgs.media.scoreboardScoreLives = trap_R_RegisterShaderNoMip("menu/headers/scorelives");
 
-		cgs.media.lpsIcon = trap_R_RegisterShaderNoMip("icons/LPSwallhackicon");
-		cgs.media.lpsIconLead = trap_R_RegisterShaderNoMip("icons/LPSwallhackleadicon");
+		cgs.media.lpsIcon = trap_R_RegisterShaderNoMip("icons/hint_lpsarrow");
+		cgs.media.lpsIconLead = trap_R_RegisterShaderNoMip("icons/hint_lpsarrowlead");
 	}
 
 	if (cgs.gametype == GT_BALLOON)
-		cgs.media.bbBoxIcon = trap_R_RegisterShaderNoMip("icons/bb_wallhack");
+		cgs.media.bbBoxIcon = trap_R_RegisterShaderNoMip("icons/hint_balloonbox");
 
 	cgs.media.smokePuffShader = trap_R_RegisterShader("powerupeffect/puff");
 	cgs.media.revivalParticleShader = trap_R_RegisterShader("powerupeffect/revival");
@@ -964,7 +992,7 @@ static void CG_RegisterGraphics(void) {
 		cgs.media.crosshairShader[i] = trap_R_RegisterShaderNoMip(va("gfx/2d/crosshair%c", ('a' + i)));
 	}
 
-	cgs.media.noammoShader = trap_R_RegisterShaderNoMip("icons/noammo");
+	cgs.media.noammoShader = trap_R_RegisterShaderNoMip("gfx/2d/noammo");
 
 	// powerup shaders
 	cgs.media.invisShader = trap_R_RegisterShader("powerups/invisibility");
@@ -980,8 +1008,6 @@ static void CG_RegisterGraphics(void) {
 	cgs.media.HealthStation_Cross = trap_R_RegisterModel("models/mapobjects/pad_healthstation/pad_hs_cross");
 	cgs.media.HealthStation_Ring = trap_R_RegisterModel("models/mapobjects/pad_healthstation/pad_hs_ring");
 	cgs.media.StationLoadingRings = trap_R_RegisterModel("models/teleporter");
-
-	cgs.media.SchaumShader = trap_R_RegisterShader("boaster/schaum");
 
 	CG_ChangeLoadingProgress(0.6f);
 
@@ -1003,7 +1029,7 @@ static void CG_RegisterGraphics(void) {
 		cgs.media.hud_br[8] = trap_R_RegisterShaderNoMip("hud/br_wood");
 		cgs.media.hud_br[9] = trap_R_RegisterShaderNoMip("hud/br_airforce");
 
-		cgs.media.sprayroomIcon = trap_R_RegisterShaderNoMip("icons/sprayroom");
+		cgs.media.sprayroomIcon = trap_R_RegisterShaderNoMip("icons/hint_sprayroom");
 	}
 
 	if (cgs.gametype < GT_TEAM || cg_buildScript.integer) {
@@ -1031,12 +1057,12 @@ static void CG_RegisterGraphics(void) {
 		cgs.media.hud_bl[9] = trap_R_RegisterShaderNoMip("hud/bl_airforce");
 		cgs.media.hud_bc[9] = trap_R_RegisterShaderNoMip("hud/bc_airforce");
 	} else {
-		cgs.media.friendShader = trap_R_RegisterShader("sprites/foe");
+		cgs.media.friendShader = trap_R_RegisterShader("icons/hint_friend");
 
 		if (cgs.gametype == GT_BALLOON || cg_buildScript.integer) {
 			cgs.media.hud_bk_balloon_red = trap_R_RegisterShaderNoMip("hud/bk_balloon_red");
 			cgs.media.hud_bk_balloon_blue = trap_R_RegisterShaderNoMip("hud/bk_balloon_blue");
-			cgs.media.hud_balloon = trap_R_RegisterShaderNoMip("hud/balloonicon");
+			cgs.media.hud_balloon = trap_R_RegisterShaderNoMip("icons/hud_balloon");
 			cgs.media.hud_balloon_bar = trap_R_RegisterShaderNoMip("hud/balloonbar");
 			cgs.media.boomiesSphereModel = trap_R_RegisterModel("models/weaponsfx/boomiessphere");
 			cgs.media.boomiesCoreShader = trap_R_RegisterShader("boomiesCore");
@@ -1046,12 +1072,12 @@ static void CG_RegisterGraphics(void) {
 
 			cgs.media.redFlagModel = trap_R_RegisterModel("models/ctl/lollipop_red");
 			cgs.media.blueFlagModel = trap_R_RegisterModel("models/ctl/lollipop_blue");
-			cgs.media.redFlagShader[0] = trap_R_RegisterShaderNoMip("icons/iconf_red1");
-			cgs.media.redFlagShader[1] = trap_R_RegisterShaderNoMip("icons/iconf_red2");
-			cgs.media.redFlagShader[2] = trap_R_RegisterShaderNoMip("icons/iconf_red3");
-			cgs.media.blueFlagShader[0] = trap_R_RegisterShaderNoMip("icons/iconf_blu1");
-			cgs.media.blueFlagShader[1] = trap_R_RegisterShaderNoMip("icons/iconf_blu2");
-			cgs.media.blueFlagShader[2] = trap_R_RegisterShaderNoMip("icons/iconf_blu3");
+			cgs.media.redFlagShader[0] = trap_R_RegisterShaderNoMip("icons/hud_lolly_red1");
+			cgs.media.redFlagShader[1] = trap_R_RegisterShaderNoMip("icons/hud_lolly_red2");
+			cgs.media.redFlagShader[2] = trap_R_RegisterShaderNoMip("icons/hud_lolly_red3");
+			cgs.media.blueFlagShader[0] = trap_R_RegisterShaderNoMip("icons/hud_lolly_blue1");
+			cgs.media.blueFlagShader[1] = trap_R_RegisterShaderNoMip("icons/hud_lolly_blue2");
+			cgs.media.blueFlagShader[2] = trap_R_RegisterShaderNoMip("icons/hud_lolly_blue3");
 
 			cgs.media.bambamMissileRedShader = trap_R_RegisterShader("bambamMissileRed");
 			cgs.media.bambamMissileBlueShader = trap_R_RegisterShader("bambamMissileBlue");
@@ -1089,7 +1115,7 @@ static void CG_RegisterGraphics(void) {
 
 	cgs.media.star = trap_R_RegisterModel("models/weaponsfx/star");
 
-	cgs.media.balloonShader = trap_R_RegisterShader("sprites/balloon3");
+	cgs.media.balloonShader = trap_R_RegisterShader("icons/hint_textchat");
 	cgs.media.dishFlashModel = trap_R_RegisterModel("models/boom");
 
 	cgs.media.teleportEffectModel = trap_R_RegisterModel("models/special/teleport");
@@ -1105,7 +1131,7 @@ static void CG_RegisterGraphics(void) {
 	}
 
 	cgs.media.medalExcellent = trap_R_RegisterShaderNoMip("icons/medal_excellent");
-	cgs.media.medalGauntlet = trap_R_RegisterShaderNoMip("icons/medal_punchy_padkiller");
+	cgs.media.medalGauntlet = trap_R_RegisterShaderNoMip("icons/medal_snackattack");
 	cgs.media.medalSpraygod = trap_R_RegisterShaderNoMip("icons/medal_spraygod");
 	cgs.media.medalSpraykiller = trap_R_RegisterShaderNoMip("icons/medal_spraykiller");
 	cgs.media.medalPadStar = trap_R_RegisterShaderNoMip("icons/medal_padstar");
@@ -1132,6 +1158,8 @@ static void CG_RegisterGraphics(void) {
 	cgs.media.wakeMarkShader = trap_R_RegisterShader("wake");
 	cgs.media.waterMarkShader = trap_R_RegisterShader("waterMark");
 	cgs.media.kmaMarkShader = trap_R_RegisterShader("kmaMark");
+	cgs.media.foamMarkShader = trap_R_RegisterShader("gfx/damage/foam_mrk");
+	cgs.media.gumMarkShader = trap_R_RegisterShader("gfx/damage/gum_mrk");
 
 	// register the inline models
 	cgs.numInlineModels = trap_CM_NumInlineModels();

@@ -30,17 +30,19 @@ REMOVE BOTS MENU
 
 #include "ui_local.h"
 
-#define ART_ARROWUP0 "menu/mods/arrowup0"
-#define ART_ARROWUP1 "menu/mods/arrowup1"
-#define ART_ARROWDOWN0 "menu/mods/arrowdown0"
-#define ART_ARROWDOWN1 "menu/mods/arrowdown1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
 
 #define NUM_BOTS 6
 
-#define ID_UP 10
-#define ID_DOWN 11
-#define ID_DELETE 12
-#define ID_BACK 13
+#define ID_BACK 10
+#define ID_UP 11
+#define ID_DOWN 12
+#define ID_DELETE 13
 #define ID_REMOVEALL 14
 #define ID_BOTNAME0 20
 #define ID_BOTNAME1 21
@@ -65,7 +67,7 @@ typedef struct {
 
 	menutext_s delete;
 	menutext_s removeAll;
-	menutext_s back;
+	menubitmap_s back;
 	menubitmap1024s_s arrowup;
 	menubitmap1024s_s arrowdown;
 
@@ -214,18 +216,6 @@ static void UI_RemoveBotsMenu_GetBots(void) {
 }
 
 /*
-=================
-UI_RemoveBots_Cache
-=================
-*/
-void UI_RemoveBots_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
-}
-
-/*
 #######################
 
   UI_RemoveBotsMenu_Draw
@@ -294,8 +284,8 @@ static void UI_RemoveBotsMenu_Init(void) {
 	removeBotsMenuInfo.arrowup.y = 236;
 	removeBotsMenuInfo.arrowup.w = 29;
 	removeBotsMenuInfo.arrowup.h = 74;
-	removeBotsMenuInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	removeBotsMenuInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWUP1);
+	removeBotsMenuInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	removeBotsMenuInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	removeBotsMenuInfo.arrowup.generic.callback = UI_RemoveBotsMenu_UpEvent;
 	removeBotsMenuInfo.arrowup.generic.id = ID_UP;
 
@@ -304,8 +294,8 @@ static void UI_RemoveBotsMenu_Init(void) {
 	removeBotsMenuInfo.arrowdown.y = 406 - 74;
 	removeBotsMenuInfo.arrowdown.w = 29; // 38
 	removeBotsMenuInfo.arrowdown.h = 74; // 98
-	removeBotsMenuInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	removeBotsMenuInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	removeBotsMenuInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	removeBotsMenuInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	removeBotsMenuInfo.arrowdown.generic.callback = UI_RemoveBotsMenu_DownEvent;
 	removeBotsMenuInfo.arrowdown.generic.id = ID_DOWN;
 
@@ -333,39 +323,40 @@ static void UI_RemoveBotsMenu_Init(void) {
 
 	removeBotsMenuInfo.delete.generic.type = MTYPE_TEXTS;
 	removeBotsMenuInfo.delete.fontHeight = 24.0f;
-	removeBotsMenuInfo.delete.generic.flags = QMF_RIGHT_JUSTIFY; //|QMF_PULSEIFFOCUS;
+	removeBotsMenuInfo.delete.generic.flags = QMF_CENTER_JUSTIFY; //|QMF_PULSEIFFOCUS;
 	removeBotsMenuInfo.delete.generic.callback = UI_RemoveBotsMenu_DeleteEvent;
 	removeBotsMenuInfo.delete.generic.id = ID_DELETE;
-	removeBotsMenuInfo.delete.generic.x = 380;
-	removeBotsMenuInfo.delete.generic.y = 280;
+	removeBotsMenuInfo.delete.generic.x = 320;
+	removeBotsMenuInfo.delete.generic.y = 290;
 	removeBotsMenuInfo.delete.string = "REMOVE";
-	removeBotsMenuInfo.delete.style = UI_SMALLFONT | UI_RIGHT;
+	removeBotsMenuInfo.delete.style = (UI_CENTER | UI_SMALLFONT);
 	removeBotsMenuInfo.delete.color = color_black;
 	removeBotsMenuInfo.delete.focuscolor = color_orange;
 
 	removeBotsMenuInfo.removeAll.generic.type = MTYPE_TEXTS;
 	removeBotsMenuInfo.removeAll.fontHeight = 14.4f;
-	removeBotsMenuInfo.removeAll.generic.flags = QMF_RIGHT_JUSTIFY; //|QMF_PULSEIFFOCUS;
+	removeBotsMenuInfo.removeAll.generic.flags = QMF_CENTER_JUSTIFY; //|QMF_PULSEIFFOCUS;
 	removeBotsMenuInfo.removeAll.generic.callback = UI_RemoveBotsMenu_DeleteEvent;
 	removeBotsMenuInfo.removeAll.generic.id = ID_REMOVEALL;
-	removeBotsMenuInfo.removeAll.generic.x = 380;
-	removeBotsMenuInfo.removeAll.generic.y = 280 + 26;
+	removeBotsMenuInfo.removeAll.generic.x = 320;
+	removeBotsMenuInfo.removeAll.generic.y = 290 + 26;
 	removeBotsMenuInfo.removeAll.string = "REMOVE ALL";
-	removeBotsMenuInfo.removeAll.style = UI_SMALLFONT | UI_RIGHT;
+	removeBotsMenuInfo.removeAll.style = (UI_CENTER | UI_SMALLFONT);
 	removeBotsMenuInfo.removeAll.color = color_black;
 	removeBotsMenuInfo.removeAll.focuscolor = color_orange;
 
-	removeBotsMenuInfo.back.generic.type = MTYPE_TEXTS;
-	removeBotsMenuInfo.back.fontHeight = 16.0f;
-	//	removeBotsMenuInfo.back.generic.flags		= QMF_PULSEIFFOCUS;
-	removeBotsMenuInfo.back.generic.callback = UI_RemoveBotsMenu_BackEvent;
+	removeBotsMenuInfo.back.generic.type = MTYPE_BITMAP;
+	removeBotsMenuInfo.back.generic.name = BACK0;
+	removeBotsMenuInfo.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
+	removeBotsMenuInfo.back.generic.x = 225;
+	removeBotsMenuInfo.back.generic.y = 340;
 	removeBotsMenuInfo.back.generic.id = ID_BACK;
-	removeBotsMenuInfo.back.generic.x = 245;
-	removeBotsMenuInfo.back.generic.y = 315;
-	removeBotsMenuInfo.back.string = "BACK";
-	removeBotsMenuInfo.back.style = UI_SMALLFONT;
-	removeBotsMenuInfo.back.color = color_black;
-	removeBotsMenuInfo.back.focuscolor = color_orange;
+	removeBotsMenuInfo.back.generic.callback = UI_RemoveBotsMenu_BackEvent;
+	removeBotsMenuInfo.back.width = 50;
+	removeBotsMenuInfo.back.height = 25;
+	removeBotsMenuInfo.back.focuspic = BACK1;
+	removeBotsMenuInfo.back.focuspicinstead = qtrue;
+
 	Menu_AddItem(&removeBotsMenuInfo.menu, &removeBotsMenuInfo.arrowup);
 	Menu_AddItem(&removeBotsMenuInfo.menu, &removeBotsMenuInfo.arrowdown);
 
@@ -381,6 +372,16 @@ static void UI_RemoveBotsMenu_Init(void) {
 	removeBotsMenuInfo.selectedBotNum = 0;
 	removeBotsMenuInfo.bots[0].color = colorDkOrange;
 	removeBotsMenuInfo.bots[0].focuscolor = color_orange;
+}
+
+/*
+=================
+UI_RemoveBots_Cache
+=================
+*/
+void UI_RemoveBots_Cache(void) {
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
 }
 
 /*

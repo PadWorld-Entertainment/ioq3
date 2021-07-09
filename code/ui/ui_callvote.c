@@ -10,10 +10,12 @@ CALL VOTE MENU
 
 #include "ui_local.h"
 
-#define ART_ARROWUP0 "menu/mods/arrowup0"
-#define ART_ARROWUP1 "menu/mods/arrowup1"
-#define ART_ARROWDOWN0 "menu/mods/arrowdown0"
-#define ART_ARROWDOWN1 "menu/mods/arrowdown1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
 
 #define ID_BACK 10
 #define ID_GO 11
@@ -47,7 +49,7 @@ typedef struct {
 	menulist_s votetype;
 	menufield_s value;
 	menutext_s go;
-	menutext_s back;
+	menubitmap_s back;
 	menutext_s voteyes;
 	menutext_s voteno;
 	menubitmap1024s_s arrowup;
@@ -149,7 +151,6 @@ static void UI_CallVote_BackEvent(void *ptr, int event) {
 	if (event != QM_ACTIVATED) {
 		return;
 	}
-
 	UI_PopMenu();
 }
 
@@ -348,9 +349,9 @@ UI_CallVote_DownEvent
 =================
 */
 // NOTE: Those are not all gametypes, this is intentional
-static const char *cvGametype_strs[] = {
-	GAMETYPE_NAME(GT_FFA), GAMETYPE_NAME(GT_SPRAYFFA), GAMETYPE_NAME(GT_LPS),	  GAMETYPE_NAME(GT_TEAM),
-	GAMETYPE_NAME(GT_CTF), GAMETYPE_NAME(GT_SPRAY),	   GAMETYPE_NAME(GT_BALLOON), NULL};
+static const char *cvGametype_strs[] = {GAMETYPE_NAME(GT_FFA),	 GAMETYPE_NAME(GT_SPRAYFFA),  GAMETYPE_NAME(GT_LPS),
+										GAMETYPE_NAME(GT_TEAM),	 GAMETYPE_NAME(GT_FREEZETAG), GAMETYPE_NAME(GT_CTF),
+										GAMETYPE_NAME(GT_SPRAY), GAMETYPE_NAME(GT_BALLOON),	  NULL};
 
 static void UI_CallVote_CVType(void *unused, int event) {
 	char info[MAX_INFO_STRING];
@@ -482,8 +483,8 @@ static void UI_CallVoteMenu_Init(void) {
 	s_callVoteMenu.arrowup.y = 300;
 	s_callVoteMenu.arrowup.w = 29;
 	s_callVoteMenu.arrowup.h = 74;
-	s_callVoteMenu.arrowup.shader = trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	s_callVoteMenu.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWUP1);
+	s_callVoteMenu.arrowup.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	s_callVoteMenu.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	s_callVoteMenu.arrowup.generic.callback = UI_CallVote_UpEvent;
 	s_callVoteMenu.arrowup.generic.id = ID_UP;
 
@@ -492,8 +493,8 @@ static void UI_CallVoteMenu_Init(void) {
 	s_callVoteMenu.arrowdown.y = (472 - 74);
 	s_callVoteMenu.arrowdown.w = 29;
 	s_callVoteMenu.arrowdown.h = 74;
-	s_callVoteMenu.arrowdown.shader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	s_callVoteMenu.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	s_callVoteMenu.arrowdown.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	s_callVoteMenu.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	s_callVoteMenu.arrowdown.generic.callback = UI_CallVote_DownEvent;
 	s_callVoteMenu.arrowdown.generic.id = ID_DOWN;
 
@@ -537,29 +538,29 @@ static void UI_CallVoteMenu_Init(void) {
 	s_callVoteMenu.voteno.color = color_black;
 	s_callVoteMenu.voteno.focuscolor = color_orange;
 
-	y = 300;
 	s_callVoteMenu.go.generic.type = MTYPE_TEXTS;
 	s_callVoteMenu.go.fontHeight = 24.0f;
-	s_callVoteMenu.go.generic.flags = QMF_RIGHT_JUSTIFY;
+	s_callVoteMenu.go.generic.flags = QMF_CENTER_JUSTIFY;
 	s_callVoteMenu.go.generic.callback = UI_CallVote_GoEvent;
 	s_callVoteMenu.go.generic.id = ID_GO;
-	s_callVoteMenu.go.generic.x = 360;
-	s_callVoteMenu.go.generic.y = (340 - 4);
+	s_callVoteMenu.go.generic.x = 320;
+	s_callVoteMenu.go.generic.y = 315;
 	s_callVoteMenu.go.string = "GO!";
-	s_callVoteMenu.go.style = (UI_SMALLFONT | UI_RIGHT);
+	s_callVoteMenu.go.style = (UI_CENTER | UI_SMALLFONT);
 	s_callVoteMenu.go.color = color_black;
 	s_callVoteMenu.go.focuscolor = color_orange;
 
-	s_callVoteMenu.back.generic.type = MTYPE_TEXTS;
-	s_callVoteMenu.back.fontHeight = 16.0f;
-	s_callVoteMenu.back.generic.callback = UI_CallVote_BackEvent;
-	s_callVoteMenu.back.generic.id = ID_BACK;
-	s_callVoteMenu.back.generic.x = 230;
+	s_callVoteMenu.back.generic.type = MTYPE_BITMAP;
+	s_callVoteMenu.back.generic.name = BACK0;
+	s_callVoteMenu.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
+	s_callVoteMenu.back.generic.x = 225;
 	s_callVoteMenu.back.generic.y = 340;
-	s_callVoteMenu.back.string = "BACK";
-	s_callVoteMenu.back.style = UI_SMALLFONT;
-	s_callVoteMenu.back.color = color_black;
-	s_callVoteMenu.back.focuscolor = color_orange;
+	s_callVoteMenu.back.generic.id = ID_BACK;
+	s_callVoteMenu.back.generic.callback = UI_CallVote_BackEvent;
+	s_callVoteMenu.back.width = 50;
+	s_callVoteMenu.back.height = 25;
+	s_callVoteMenu.back.focuspic = BACK1;
+	s_callVoteMenu.back.focuspicinstead = qtrue;
 
 	Menu_AddItem(&s_callVoteMenu.menu, &s_callVoteMenu.votetype);
 	Menu_AddItem(&s_callVoteMenu.menu, &s_callVoteMenu.arrowup);
@@ -585,10 +586,8 @@ UI_CallVote_Cache
 =================
 */
 static void UI_CallVote_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
 }
 
 /*

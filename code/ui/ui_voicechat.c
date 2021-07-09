@@ -1,23 +1,24 @@
 #include "ui_local.h"
 
-#define ART_ARROWUP0 "menu/mods/arrowup0"
-#define ART_ARROWUP1 "menu/mods/arrowup1"
-#define ART_ARROWDOWN0 "menu/mods/arrowdown0"
-#define ART_ARROWDOWN1 "menu/mods/arrowdown1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
 
 #define NUM_LISTEDCLIENTS 6 // tied to the ID_CLIENTXs
 #define NAME_MAXLENGTH 32
 
-#define ID_BACK 1
-//#define ID_GO				2
-#define ID_UP 3
-#define ID_DOWN 4
-#define ID_CLIENT0 5
-#define ID_CLIENT1 6
-#define ID_CLIENT2 7
-#define ID_CLIENT3 8
-#define ID_CLIENT4 9
-#define ID_CLIENT5 10
+#define ID_BACK 10
+#define ID_UP 11
+#define ID_DOWN 12
+#define ID_CLIENT0 13
+#define ID_CLIENT1 14
+#define ID_CLIENT2 15
+#define ID_CLIENT3 16
+#define ID_CLIENT4 17
+#define ID_CLIENT5 18
 
 typedef struct {
 	menuframework_s menu;
@@ -29,7 +30,7 @@ typedef struct {
 	menuradiobutton_s muteAll;
 	menulist_s sendTarget;
 
-	menutext_s back;
+	menubitmap_s back;
 	menubitmap1024s_s arrowup;
 	menubitmap1024s_s arrowdown;
 
@@ -252,8 +253,8 @@ static void UI_VoiceChatMenu_Init(void) {
 	voiceChatMenuInfo.arrowup.y = 236; // 204;
 	voiceChatMenuInfo.arrowup.w = 29;
 	voiceChatMenuInfo.arrowup.h = 74;
-	voiceChatMenuInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	voiceChatMenuInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWUP1);
+	voiceChatMenuInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	voiceChatMenuInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	voiceChatMenuInfo.arrowup.generic.callback = UI_VoiceChatMenu_UpEvent;
 	voiceChatMenuInfo.arrowup.generic.id = ID_UP;
 
@@ -262,8 +263,8 @@ static void UI_VoiceChatMenu_Init(void) {
 	voiceChatMenuInfo.arrowdown.y = 406 - 74; // 374-74;
 	voiceChatMenuInfo.arrowdown.w = 29;		  // 38
 	voiceChatMenuInfo.arrowdown.h = 74;		  // 98
-	voiceChatMenuInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	voiceChatMenuInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	voiceChatMenuInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	voiceChatMenuInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	voiceChatMenuInfo.arrowdown.generic.callback = UI_VoiceChatMenu_DownEvent;
 	voiceChatMenuInfo.arrowdown.generic.id = ID_DOWN;
 
@@ -332,17 +333,17 @@ static void UI_VoiceChatMenu_Init(void) {
 		i++;
 	}
 
-	voiceChatMenuInfo.back.generic.type = MTYPE_TEXTS;
-	voiceChatMenuInfo.back.fontHeight = 16.0f;
-	//	addBotsMenuInfo.back.generic.flags		= QMF_PULSEIFFOCUS;
-	voiceChatMenuInfo.back.generic.callback = UI_VoiceChatMenu_BackEvent;
-	voiceChatMenuInfo.back.generic.id = ID_BACK;
-	voiceChatMenuInfo.back.generic.x = 245;
+	voiceChatMenuInfo.back.generic.type = MTYPE_BITMAP;
+	voiceChatMenuInfo.back.generic.name = BACK0;
+	voiceChatMenuInfo.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
+	voiceChatMenuInfo.back.generic.x = 225;
 	voiceChatMenuInfo.back.generic.y = 340;
-	voiceChatMenuInfo.back.string = "BACK";
-	voiceChatMenuInfo.back.style = UI_SMALLFONT;
-	voiceChatMenuInfo.back.color = color_black;
-	voiceChatMenuInfo.back.focuscolor = color_orange;
+	voiceChatMenuInfo.back.generic.id = ID_BACK;
+	voiceChatMenuInfo.back.generic.callback = UI_VoiceChatMenu_BackEvent;
+	voiceChatMenuInfo.back.width = 50;
+	voiceChatMenuInfo.back.height = 25;
+	voiceChatMenuInfo.back.focuspic = BACK1;
+	voiceChatMenuInfo.back.focuspicinstead = qtrue;
 
 	Menu_AddItem(&voiceChatMenuInfo.menu, &voiceChatMenuInfo.arrowup);
 	Menu_AddItem(&voiceChatMenuInfo.menu, &voiceChatMenuInfo.arrowdown);
@@ -358,10 +359,8 @@ static void UI_VoiceChatMenu_Init(void) {
 }
 
 void UI_VoiceChatMenu_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
 }
 
 void UI_VoiceIngame(void) {

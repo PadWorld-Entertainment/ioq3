@@ -82,14 +82,12 @@ void UI_StartDemoLoop(void) {
 void UI_StartCreditMusic(void) {
 	uis.musicstate = MUSICSTATE_RUNNING;
 	trap_S_StopBackgroundTrack();
-	//	trap_S_StartBackgroundTrack("music/green sun - yes, he comes!.ogg", "music/green sun - yes, he comes!.ogg");
-	trap_S_StartBackgroundTrack("wopmusic/greensun/09_pad-anthem (credits).ogg",
-								"wopmusic/greensun/09_pad-anthem (credits).ogg");
+	trap_S_StartBackgroundTrack("music/credits", "music/credits");
 }
 
 void UI_StartMusic(void) {
 	uis.musicstate = MUSICSTATE_RUNNING;
-	trap_S_StartBackgroundTrack("music/22khz_menue_loop", "music/22khz_menue_loop");
+	trap_S_StartBackgroundTrack("music/menuloop", "music/menuloop");
 }
 
 void UI_StopMusic(void) {
@@ -205,8 +203,8 @@ UI_DrawProportionalString2
 =================
 */
 static const struct FontData {
-	int x; // x offset in font atlas
-	int y; // y offset in font atlas
+	int x;	   // x offset in font atlas
+	int y;	   // y offset in font atlas
 	int width; // width of the character
 } propMap[128] = {
 	{0, 0, -1},
@@ -1332,9 +1330,9 @@ void UI_DrawMenu(menuframework_s *menu) {
 
 			if (menu->bgparts) {
 				if (menu->bgparts & BGP_MAINBG)
-					UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.pad_menushader);
+					UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.pad_mainbgfx);
 				if (menu->bgparts & BGP_SIMPLEBG)
-					UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.pad_simpleMenuBg);
+					UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.pad_menubgfx);
 				if (menu->bgparts & BGP_MAINFRAME)
 					UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.pad_mainframe);
 				if (menu->bgparts & BGP_SETUPBG)

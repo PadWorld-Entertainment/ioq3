@@ -30,16 +30,16 @@ NETWORK OPTIONS MENU
 
 #include "ui_local.h"
 
-#define BACK0 "menu/BtnBack0"
-#define BACK1 "menu/BtnBack1"
-#define GRAPHICS0 "menu/system/graphics0"
-#define GRASHICS1 "menu/system/graphics1"
-#define DISPLAY0 "menu/system/display0"
-#define DISPLAY1 "menu/system/display1"
-#define SOUND0 "menu/system/sound0"
-#define SOUND1 "menu/system/sound1"
-#define NETWORK0 "menu/system/network0"
-#define NETWORK1 "menu/system/network1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define GRAPHICS0 "menu/buttons/graphics0"
+#define GRASHICS1 "menu/buttons/graphics1"
+#define DISPLAY0 "menu/buttons/display0"
+#define DISPLAY1 "menu/buttons/display1"
+#define SOUND0 "menu/buttons/sound0"
+#define SOUND1 "menu/buttons/sound1"
+#define NETWORK0 "menu/buttons/network0"
+#define NETWORK1 "menu/buttons/network1"
 
 #define ID_GRAPHICS 10
 #define ID_DISPLAY 11
@@ -48,6 +48,8 @@ NETWORK OPTIONS MENU
 #define ID_RATE 14
 #define ID_ALLOWDOWNLOAD 15
 #define ID_BACK 16
+
+#define XPOSITION 180
 
 static const char *rate_items[] = {"Modem", "ISDN", "LAN/Cable/xDSL", 0};
 
@@ -137,9 +139,9 @@ static void UI_NetworkOptionsMenu_Init(void) {
 	networkOptionsInfo.graphics.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	networkOptionsInfo.graphics.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.graphics.generic.id = ID_GRAPHICS;
-	networkOptionsInfo.graphics.generic.x = 26;
+	networkOptionsInfo.graphics.generic.x = 16;
 	networkOptionsInfo.graphics.generic.y = 37;
-	networkOptionsInfo.graphics.width = 130;
+	networkOptionsInfo.graphics.width = 160;
 	networkOptionsInfo.graphics.height = 40;
 	networkOptionsInfo.graphics.focuspic = GRASHICS1;
 	networkOptionsInfo.graphics.focuspicinstead = qtrue;
@@ -149,9 +151,9 @@ static void UI_NetworkOptionsMenu_Init(void) {
 	networkOptionsInfo.display.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	networkOptionsInfo.display.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.display.generic.id = ID_DISPLAY;
-	networkOptionsInfo.display.generic.x = 159;
+	networkOptionsInfo.display.generic.x = 169;
 	networkOptionsInfo.display.generic.y = 30;
-	networkOptionsInfo.display.width = 122;
+	networkOptionsInfo.display.width = 120;
 	networkOptionsInfo.display.height = 40;
 	networkOptionsInfo.display.focuspic = DISPLAY1;
 	networkOptionsInfo.display.focuspicinstead = qtrue;
@@ -161,9 +163,9 @@ static void UI_NetworkOptionsMenu_Init(void) {
 	networkOptionsInfo.sound.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	networkOptionsInfo.sound.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.sound.generic.id = ID_SOUND;
-	networkOptionsInfo.sound.generic.x = 40;
-	networkOptionsInfo.sound.generic.y = 77;
-	networkOptionsInfo.sound.width = 130;
+	networkOptionsInfo.sound.generic.x = 36;
+	networkOptionsInfo.sound.generic.y = 79;
+	networkOptionsInfo.sound.width = 120;
 	networkOptionsInfo.sound.height = 40;
 	networkOptionsInfo.sound.focuspic = SOUND1;
 	networkOptionsInfo.sound.focuspicinstead = qtrue;
@@ -173,20 +175,20 @@ static void UI_NetworkOptionsMenu_Init(void) {
 	networkOptionsInfo.network.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT;
 	networkOptionsInfo.network.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.network.generic.id = ID_NETWORK;
-	networkOptionsInfo.network.generic.x = 170;
-	networkOptionsInfo.network.generic.y = 80;
-	networkOptionsInfo.network.width = 100;
-	networkOptionsInfo.network.height = 45;
+	networkOptionsInfo.network.generic.x = 142;
+	networkOptionsInfo.network.generic.y = 82;
+	networkOptionsInfo.network.width = 160;
+	networkOptionsInfo.network.height = 40;
 	networkOptionsInfo.network.focuspic = NETWORK1;
 	networkOptionsInfo.network.focuspicinstead = qtrue;
 
-	y = 240 - 1 * (BIGCHAR_HEIGHT + 2);
+	y = 180 + 2 * (BIGCHAR_HEIGHT + 2);
 	networkOptionsInfo.rate.generic.type = MTYPE_SPINCONTROL;
 	networkOptionsInfo.rate.generic.name = "Data Rate:";
 	networkOptionsInfo.rate.generic.flags = QMF_SMALLFONT;
 	networkOptionsInfo.rate.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.rate.generic.id = ID_RATE;
-	networkOptionsInfo.rate.generic.x = 190;
+	networkOptionsInfo.rate.generic.x = XPOSITION;
 	networkOptionsInfo.rate.generic.y = y;
 	networkOptionsInfo.rate.itemnames = rate_items;
 
@@ -196,7 +198,7 @@ static void UI_NetworkOptionsMenu_Init(void) {
 	networkOptionsInfo.allowdownload.generic.flags = QMF_SMALLFONT;
 	networkOptionsInfo.allowdownload.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.allowdownload.generic.id = ID_ALLOWDOWNLOAD;
-	networkOptionsInfo.allowdownload.generic.x = 190;
+	networkOptionsInfo.allowdownload.generic.x = XPOSITION;
 	networkOptionsInfo.allowdownload.generic.y = y;
 	networkOptionsInfo.allowdownload.generic.toolTip =
 		"Enable to automatically download custom maps / custom files needed to play on modified servers. NOTE: Custom "
@@ -207,7 +209,7 @@ static void UI_NetworkOptionsMenu_Init(void) {
 	networkOptionsInfo.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
 	networkOptionsInfo.back.generic.callback = UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.back.generic.id = ID_BACK;
-	networkOptionsInfo.back.generic.x = 9;
+	networkOptionsInfo.back.generic.x = 8;
 	networkOptionsInfo.back.generic.y = 440;
 	networkOptionsInfo.back.width = 80;
 	networkOptionsInfo.back.height = 40;

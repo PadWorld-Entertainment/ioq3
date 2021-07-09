@@ -26,16 +26,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 	SPECIFY SERVER
 *********************************************************************************/
 
-#define SPECIFYSERVER_BACK0 "menu/BtnBack0"
-#define SPECIFYSERVER_BACK1 "menu/BtnBack1"
-#define SPECIFYSERVER_FIGHT0 "menu/specify/fight0"
-#define SPECIFYSERVER_FIGHT1 "menu/specify/fight1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define FIGHT0 "menu/buttons/fight0"
+#define FIGHT1 "menu/buttons/fight1"
 
 #define ID_SPECIFYSERVERBACK 102
 #define ID_SPECIFYSERVERGO 103
 
-static char *specifyserver_artlist[] = {SPECIFYSERVER_BACK0, SPECIFYSERVER_BACK1, SPECIFYSERVER_FIGHT0,
-										SPECIFYSERVER_FIGHT1, NULL};
+static char *specifyserver_artlist[] = {BACK0, BACK1, FIGHT0, FIGHT1, NULL};
 
 typedef struct {
 	menuframework_s menu;
@@ -178,7 +177,7 @@ void SpecifyServer_MenuInit(void) {
 	s_specifyserver.port.generic.ownerdraw = SpecifyServer_DrawField;
 
 	s_specifyserver.back.generic.type = MTYPE_BITMAP;
-	s_specifyserver.back.generic.name = SPECIFYSERVER_BACK0;
+	s_specifyserver.back.generic.name = BACK0;
 	s_specifyserver.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
 	s_specifyserver.back.generic.x = 8;
 	s_specifyserver.back.generic.y = 440;
@@ -186,16 +185,16 @@ void SpecifyServer_MenuInit(void) {
 	s_specifyserver.back.generic.callback = SpecifyServer_Event;
 	s_specifyserver.back.width = 80;
 	s_specifyserver.back.height = 40;
-	s_specifyserver.back.focuspic = SPECIFYSERVER_BACK1;
+	s_specifyserver.back.focuspic = BACK1;
 	s_specifyserver.back.focuspicinstead = qtrue;
 
 	s_specifyserver.go.generic.type = MTYPE_BITMAP1024S;
-	s_specifyserver.go.x = 845; // 820;
-	s_specifyserver.go.y = 658; // 620;
+	s_specifyserver.go.x = 870; // 820;
+	s_specifyserver.go.y = 660; // 620;
 	s_specifyserver.go.w = 135; // 187;
 	s_specifyserver.go.h = 97;	// 134;
-	s_specifyserver.go.shader = trap_R_RegisterShaderNoMip(SPECIFYSERVER_FIGHT0);
-	s_specifyserver.go.mouseovershader = trap_R_RegisterShaderNoMip(SPECIFYSERVER_FIGHT1);
+	s_specifyserver.go.shader = trap_R_RegisterShaderNoMip(FIGHT0);
+	s_specifyserver.go.mouseovershader = trap_R_RegisterShaderNoMip(FIGHT1);
 	s_specifyserver.go.generic.callback = SpecifyServer_Event;
 	s_specifyserver.go.generic.id = ID_SPECIFYSERVERGO;
 

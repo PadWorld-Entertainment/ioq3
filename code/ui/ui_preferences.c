@@ -30,125 +30,158 @@ GAME OPTIONS MENU
 
 #include "ui_local.h"
 
-#define ART_BACK0 "menu/BtnBack0"
-#define ART_BACK1 "menu/BtnBack1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define HUD0 "menu/buttons/hud0"
+#define HUD1 "menu/buttons/hud1"
+#define CHAT0 "menu/buttons/chat0"
+#define CHAT1 "menu/buttons/chat1"
+#define HELP0 "menu/buttons/help0"
+#define HELP1 "menu/buttons/help1"
 
-#define PREFERENCES_X_POS 534
+// options sections
+#define O_HUD 0
+#define O_CHAT 1
+#define O_HELP 2
+#define O_MAX 3
 
-#define ID_CROSSHAIR 127
-#define ID_SIMPLEITEMS 128
-#define ID_HIGHQUALITYSKY 129
-#define ID_FLARES 130
-#define ID_WALLMARKS 131
-#define ID_DYNAMICLIGHTS 132
-#define ID_IDENTIFYTARGET 133
-#define ID_SYNCEVERYFRAME 134
-#define ID_FORCEMODEL 135
-#define ID_DRAWTEAMOVERLAY 136
-#define ID_ALLOWDOWNLOAD 137
-#define ID_BACK 138
+#define ID_BACK 10
+#define ID_HUD 11
+#define ID_CHAT 12
+#define ID_HELP 13
 
-#define ID_FFAHUD 139
-#define ID_CONNOTIFY 140
-#define ID_TIMELEFT 141
+#define ID_CROSSHAIR 20
+#define ID_FFAHUD 21
+#define ID_IDENTIFYTARGET 22
+#define ID_DRAWTEAMOVERLAY 23
+#define ID_TIMER 24
+#define ID_TIMELEFT 25
+#define ID_REALTIME 26
+#define ID_UPS 27
+#define ID_FPS 28
 
-#define ID_TIMER 142
-#define ID_FPS 143
-#define ID_UPS 144
-#define ID_REALTIME 145
-#define ID_MORE 146
+#define ID_FORCEMODEL 30
+#define ID_GLOWMODEL 31
+#define ID_GLOWCOLOR 32
 
-#define ID_GLOWMODEL 147
-#define ID_GLOWCOLOR 148
+#define ID_CONNOTIFY 40
+#define ID_CHATHEIGHT 41
+#define ID_DRAWCHATICON 42
+#define ID_CHATBEEP 43
+#define ID_BOTCHAT 44
+#define ID_TEAMCHATSONLY 45
 
-#define ID_WALLHACKLPS 149
-#define ID_WALLHACKTEAMMATES 150
-#define ID_WALLHACKBALLOONS 151
-#define ID_WALLHACKHSTATION 152
-#define ID_WALLHACKSYCTELE 153
-#define ID_LENSFLARE 154
+#define ID_WALLHACKTEAMMATES 50
+#define ID_WALLHACKHSTATION 51
+#define ID_WALLHACKSYCTELE 52
+#define ID_WALLHACKBALLOONS 53
+#define ID_WALLHACKLPS 54
+#define ID_WALLHACKFREEZETAG 55
 
 #define NUM_CROSSHAIRS 12
+
+#define XPOSITION 534
+#define YPOSITION 216
 
 typedef struct {
 	menuframework_s menu;
 
+	menubitmap_s hud;
+	menubitmap_s chat;
+	menubitmap_s help;
+
 	menulist_s crosshair;
-	menuradiobutton_s simpleitems;
-	menuradiobutton_s flares;
-	menuradiobutton_s wallmarks;
-	menuradiobutton_s dynamiclights;
+	menulist_s ffahud;
 	menuradiobutton_s identifytarget;
-	menuradiobutton_s highqualitysky;
-	menuradiobutton_s synceveryframe;
+	menuradiobutton_s drawteamoverlay;
+	menuradiobutton_s timer;
+	menuradiobutton_s timeleft;
+	menuradiobutton_s realtime;
+	menuradiobutton_s ups;
+	menuradiobutton_s fps;
 	menuradiobutton_s forcemodel;
 	menuradiobutton_s glowmodel;
-	menuradiobutton_s drawteamoverlay;
-
-	menulist_s ffahud;
-	menulist_s con_notifytime;
-	menuradiobutton_s timeleft;
-
-	menuradiobutton_s timer;
-	menuradiobutton_s fps;
-	menuradiobutton_s ups;
-	menuradiobutton_s realtime;
-
-	menuradiobutton_s allowdownload;
-	menutext_s more;
-	menubitmap_s back;
-
 	menulist_s glowcolor;
-	menuradiobutton_s whLPS;
+
+	menulist_s connotify;
+	menulist_s chatheight;
+	menuradiobutton_s drawchaticon;
+	menuradiobutton_s chatbeep;
+	menulist_s botchat;
+	menuradiobutton_s teamchatsonly;
+
+	menutext_s whIcons;
 	menuradiobutton_s whTeamMates;
-	menuradiobutton_s whBalloons;
 	menuradiobutton_s whHStations;
 	menuradiobutton_s whSycTele;
-	menuradiobutton_s lensFlare;
+	menuradiobutton_s whBalloons;
+	menuradiobutton_s whLPS;
+	menuradiobutton_s whFreezeTag;
+
+	menubitmap_s back;
 
 	qhandle_t crosshairShader[NUM_CROSSHAIRS];
+	int section;
+
 } preferences_t;
 
 static preferences_t s_preferences;
-static qboolean page;
 
-static menucommon_s *page1_options[] = {(menucommon_s *)&s_preferences.crosshair,
-										(menucommon_s *)&s_preferences.drawteamoverlay,
-										(menucommon_s *)&s_preferences.ffahud,
-										(menucommon_s *)&s_preferences.con_notifytime,
-										(menucommon_s *)&s_preferences.timer,
-										(menucommon_s *)&s_preferences.timeleft,
-										(menucommon_s *)&s_preferences.realtime,
-										(menucommon_s *)&s_preferences.ups,
-										(menucommon_s *)&s_preferences.fps,
-										(menucommon_s *)&s_preferences.forcemodel,
-										(menucommon_s *)&s_preferences.glowmodel,
-										(menucommon_s *)&s_preferences.glowcolor,
-										(menucommon_s *)&s_preferences.identifytarget,
-										NULL};
+static menucommon_s *g_hud_options[] = {
+	(menucommon_s *)&s_preferences.crosshair,
+	(menucommon_s *)&s_preferences.ffahud,
+	(menucommon_s *)&s_preferences.identifytarget,
+	(menucommon_s *)&s_preferences.drawteamoverlay,
+	(menucommon_s *)&s_preferences.timer,
+	(menucommon_s *)&s_preferences.timeleft,
+	(menucommon_s *)&s_preferences.realtime,
+	(menucommon_s *)&s_preferences.ups,
+	(menucommon_s *)&s_preferences.fps,
+	(menucommon_s *)&s_preferences.forcemodel,
+	(menucommon_s *)&s_preferences.glowmodel,
+	(menucommon_s *)&s_preferences.glowcolor,
+	NULL
+};
 
-static menucommon_s *page2_options[] = {(menucommon_s *)&s_preferences.simpleitems,
-										(menucommon_s *)&s_preferences.wallmarks,
-										(menucommon_s *)&s_preferences.dynamiclights,
-										(menucommon_s *)&s_preferences.highqualitysky,
-										(menucommon_s *)&s_preferences.flares,
-										(menucommon_s *)&s_preferences.synceveryframe,
-										(menucommon_s *)&s_preferences.whLPS,
-										(menucommon_s *)&s_preferences.whTeamMates,
-										(menucommon_s *)&s_preferences.whBalloons,
-										(menucommon_s *)&s_preferences.whHStations,
-										(menucommon_s *)&s_preferences.whSycTele,
-										(menucommon_s *)&s_preferences.lensFlare,
-										NULL};
+static menucommon_s *g_chat_options[] = {
+	(menucommon_s *)&s_preferences.connotify,
+	(menucommon_s *)&s_preferences.chatheight,
+	(menucommon_s *)&s_preferences.drawchaticon,
+	(menucommon_s *)&s_preferences.chatbeep,
+	(menucommon_s *)&s_preferences.botchat,
+	(menucommon_s *)&s_preferences.teamchatsonly,
+	NULL
+};
+
+static menucommon_s *g_help_options[] = {
+	(menucommon_s *)&s_preferences.whIcons,
+	(menucommon_s *)&s_preferences.whTeamMates,
+	(menucommon_s *)&s_preferences.whHStations,
+	(menucommon_s *)&s_preferences.whSycTele,
+	(menucommon_s *)&s_preferences.whBalloons,
+	(menucommon_s *)&s_preferences.whLPS,
+	(menucommon_s *)&s_preferences.whFreezeTag,
+	NULL
+};
+
+static menucommon_s **g_options[] = {
+	g_hud_options,
+	g_chat_options,
+	g_help_options,
+};
 
 static const char *ffahud_names[] = {"Black", "Red",	"Blue", "Green",	"Chrome", "Whitemetal",
 									 "Rust",  "Flower", "Wood", "Airforce", NULL};
 
-static const char *con_notifytime_strs[] = {"short", "long", "short (icon)", "long (icon)", NULL};
+static const char *connotify_names[] = {"Short", "Default", "Long", "Maximum", NULL};
 
 static const char *glowcolor_names[] = {S_COLOR_BLACK "Black",	   S_COLOR_RED "Red",	  S_COLOR_GREEN "Green",
 										S_COLOR_YELLOW "Yellow",   S_COLOR_BLUE "Blue",	  S_COLOR_CYAN "Cyan",
 										S_COLOR_MAGENTA "Magenta", S_COLOR_WHITE "White", NULL};
+
+static const char *botchat_names[] = {"Off", "Default", "Often", NULL};
+
+static const char *chatheight_names[] = {"Default", "Expanded", "Maximum", NULL};
 
 static void UpdateGlowColorFlags(void) {
 	if (s_preferences.glowcolor.generic.flags & QMF_HIDDEN)
@@ -163,20 +196,45 @@ static void UpdateGlowColorFlags(void) {
 
 static void Preferences_SetMenuItems(void) {
 	int notify;
+	int chatheight;
 	int cg_iconsCvarValue = (int)trap_Cvar_VariableValue("cg_icons");
 
 	notify = UI_GetCvarInt("con_notifytime");
-	if (notify > 0 && notify <= 3)
-		s_preferences.con_notifytime.curvalue = 0;
-	else if (notify > 3)
-		s_preferences.con_notifytime.curvalue = 1;
-	else if (notify < 0 && notify >= -5)
-		s_preferences.con_notifytime.curvalue = 2;
-	else if (notify < -5)
-		s_preferences.con_notifytime.curvalue = 3;
+	if (notify < 0) {
+		notify *= -1;
+	}
+	if (notify > 0 && notify <= 2)
+		s_preferences.connotify.curvalue = 0;
+	else if (notify > 2 && notify <= 4)
+		s_preferences.connotify.curvalue = 1;
+	else if (notify > 4 && notify <= 6)
+		s_preferences.connotify.curvalue = 2;
+	else if (notify > 6)
+		s_preferences.connotify.curvalue = 3;
 
+	s_preferences.drawchaticon.curvalue = trap_Cvar_VariableValue("cg_drawChatIcon") != 0;
 	s_preferences.ffahud.curvalue = Com_Clamp(0, 9, trap_Cvar_VariableValue("cg_wopFFAhud"));
 	s_preferences.timeleft.curvalue = Com_Clamp(0, 1, trap_Cvar_VariableValue("cg_drawTimeLeft"));
+	s_preferences.chatbeep.curvalue = trap_Cvar_VariableValue("cg_chatBeep") != 0;
+	s_preferences.teamchatsonly.curvalue = trap_Cvar_VariableValue("cg_teamChatsOnly") != 0;
+
+	if (trap_Cvar_VariableValue("bot_nochat") != 1) {
+		if (trap_Cvar_VariableValue("bot_fastchat") != 0) {
+			s_preferences.botchat.curvalue = 2;
+		} else {
+			s_preferences.botchat.curvalue = 1;			
+		}
+	} else {
+		s_preferences.botchat.curvalue = 0;
+	}
+
+	chatheight = trap_Cvar_VariableValue("cg_chatHeight");
+	if (chatheight > 6 && chatheight <= 8)
+		s_preferences.chatheight.curvalue = 2;
+	else if (chatheight > 4 && chatheight <= 6)
+		s_preferences.chatheight.curvalue = 1;
+	else
+		s_preferences.chatheight.curvalue = 0;
 
 	s_preferences.timer.curvalue = Com_Clamp(0, 1, trap_Cvar_VariableValue("cg_drawTimer"));
 	s_preferences.fps.curvalue = Com_Clamp(0, 1, trap_Cvar_VariableValue("cg_drawFPS"));
@@ -185,59 +243,100 @@ static void Preferences_SetMenuItems(void) {
 	s_preferences.whLPS.curvalue = (ICON_ARROW & cg_iconsCvarValue);
 	s_preferences.whBalloons.curvalue = (ICON_BALLOON & cg_iconsCvarValue);
 	s_preferences.whTeamMates.curvalue = (ICON_TEAMMATE & cg_iconsCvarValue);
+	s_preferences.whFreezeTag.curvalue = (ICON_FREEZETAG & cg_iconsCvarValue);
 	s_preferences.whHStations.curvalue = (ICON_HEALTHSTATION & cg_iconsCvarValue);
 	s_preferences.whSycTele.curvalue = (ICON_SPRAYROOM & cg_iconsCvarValue);
 
 	s_preferences.crosshair.curvalue = (int)trap_Cvar_VariableValue("cg_drawCrosshair") % NUM_CROSSHAIRS;
-	s_preferences.simpleitems.curvalue = trap_Cvar_VariableValue("cg_simpleItems") != 0;
-	s_preferences.flares.curvalue = trap_Cvar_VariableValue("r_flares") != 0;
-	s_preferences.wallmarks.curvalue = trap_Cvar_VariableValue("cg_marks") != 0;
 	s_preferences.identifytarget.curvalue = trap_Cvar_VariableValue("cg_drawCrosshairNames") != 0;
-	s_preferences.dynamiclights.curvalue = trap_Cvar_VariableValue("r_dynamiclight") != 0;
-	s_preferences.highqualitysky.curvalue = trap_Cvar_VariableValue("r_fastsky") == 0;
-	s_preferences.synceveryframe.curvalue = trap_Cvar_VariableValue("r_finish") != 0;
 	s_preferences.forcemodel.curvalue = (trap_Cvar_VariableValue("cg_forcemodel") != 0.0f);
 	s_preferences.drawteamoverlay.curvalue = trap_Cvar_VariableValue("cg_drawTeamOverlay") != 0;
-	s_preferences.allowdownload.curvalue = trap_Cvar_VariableValue("cl_allowDownload") != 0;
-	s_preferences.lensFlare.curvalue = trap_Cvar_VariableValue("cg_drawLensflare") != 0;
 	s_preferences.glowcolor.curvalue = trap_Cvar_VariableValue("cg_glowModel"); // cg_glowModelTeam..
 	s_preferences.glowmodel.curvalue = (s_preferences.glowcolor.curvalue != 0);
 	UpdateGlowColorFlags();
 }
 
-static void SwitchPage(void) {
-	menucommon_s **hide_options;
-	menucommon_s **show_options;
-	menucommon_s *option;
+/*
+=================
+Options_Update
+=================
+*/
+static void Options_Update(void) {
+	int i;
 	int j;
 
-	page = !page;
+	menucommon_s **options;
+	menucommon_s *option;
 
-	if (!page) {
-		show_options = page1_options;
-		hide_options = page2_options;
-	} else {
-		show_options = page2_options;
-		hide_options = page1_options;
+	// disable all options in all groups
+	for (i = 0; i < O_MAX; i++) {
+		options = g_options[i];
+		for (j = 0; (option = options[j]); j++) {
+			option->flags |= (QMF_HIDDEN | QMF_INACTIVE);
+		}
 	}
 
-	for (j = 0; (option = hide_options[j]); j++) {
-		option->flags |= (QMF_HIDDEN | QMF_INACTIVE);
-	}
+	options = g_options[s_preferences.section];
 
-	for (j = 0; (option = show_options[j]); j++) {
-		option->flags &= ~(QMF_HIDDEN | QMF_INACTIVE);
+	// enable options in active group
+	for (j = 0; (option = options[j]); j++) {
+		option->flags &= ~(QMF_GRAYED | QMF_HIDDEN | QMF_INACTIVE);
 	}
 
 	UpdateGlowColorFlags();
+
+	// makes sure flags are right on the group selection controls
+	s_preferences.hud.generic.flags &= ~(QMF_GRAYED | QMF_HIGHLIGHT | QMF_HIGHLIGHT_IF_FOCUS);
+	s_preferences.chat.generic.flags &= ~(QMF_GRAYED | QMF_HIGHLIGHT | QMF_HIGHLIGHT_IF_FOCUS);
+	s_preferences.help.generic.flags &= ~(QMF_GRAYED | QMF_HIGHLIGHT | QMF_HIGHLIGHT_IF_FOCUS);
+
+	s_preferences.hud.generic.flags |= QMF_HIGHLIGHT_IF_FOCUS;
+	s_preferences.chat.generic.flags |= QMF_HIGHLIGHT_IF_FOCUS;
+	s_preferences.help.generic.flags |= QMF_HIGHLIGHT_IF_FOCUS;
+
+	// set buttons
+	switch (s_preferences.section) {
+	case O_HUD:
+		s_preferences.hud.generic.flags |= QMF_HIGHLIGHT;
+		break;
+
+	case O_CHAT:
+		s_preferences.chat.generic.flags |= QMF_HIGHLIGHT;
+		break;
+
+	case O_HELP:
+		s_preferences.help.generic.flags |= QMF_HIGHLIGHT;
+		break;
+	}
 }
 
+/*
+=================
+Preferences_Event
+=================
+*/
 static void Preferences_Event(void *ptr, int notification) {
+
 	if (notification != QM_ACTIVATED) {
 		return;
 	}
 
 	switch (((menucommon_s *)ptr)->id) {
+	case ID_HUD:
+		s_preferences.section = O_HUD;
+		Options_Update();
+		break;
+
+	case ID_CHAT:
+		s_preferences.section = O_CHAT;
+		Options_Update();
+		break;
+
+	case ID_HELP:
+		s_preferences.section = O_HELP;
+		Options_Update();
+		break;
+
 	case ID_CROSSHAIR:
 		s_preferences.crosshair.curvalue++;
 		if (s_preferences.crosshair.curvalue == NUM_CROSSHAIRS) {
@@ -246,36 +345,51 @@ static void Preferences_Event(void *ptr, int notification) {
 		trap_Cvar_SetValue("cg_drawCrosshair", s_preferences.crosshair.curvalue);
 		break;
 
-	case ID_SIMPLEITEMS:
-		trap_Cvar_SetValue("cg_simpleItems", s_preferences.simpleitems.curvalue);
-		break;
-
-	case ID_HIGHQUALITYSKY:
-		trap_Cvar_SetValue("r_fastsky", !s_preferences.highqualitysky.curvalue);
-		break;
-
-	case ID_FLARES:
-		trap_Cvar_SetValue("r_flares", s_preferences.flares.curvalue);
-		break;
-
-	case ID_WALLMARKS:
-		trap_Cvar_SetValue("cg_marks", s_preferences.wallmarks.curvalue);
-		break;
-
-	case ID_DYNAMICLIGHTS:
-		trap_Cvar_SetValue("r_dynamiclight", s_preferences.dynamiclights.curvalue);
-		break;
-
 	case ID_IDENTIFYTARGET:
 		trap_Cvar_SetValue("cg_drawCrosshairNames", s_preferences.identifytarget.curvalue);
 		break;
 
-	case ID_SYNCEVERYFRAME:
-		trap_Cvar_SetValue("r_finish", s_preferences.synceveryframe.curvalue);
-		break;
-
 	case ID_FORCEMODEL:
 		trap_Cvar_SetValue("cg_forcemodel", s_preferences.forcemodel.curvalue);
+		break;
+
+	case ID_CHATBEEP:
+		if (s_preferences.chatbeep.curvalue == 0) {
+			trap_Cvar_SetValue("cg_chatBeep", s_preferences.chatbeep.curvalue);
+		} else {
+			trap_Cvar_SetValue("cg_chatBeep", 7);
+		}
+		break;
+
+	case ID_TEAMCHATSONLY:
+		trap_Cvar_SetValue("cg_teamChatsOnly", s_preferences.teamchatsonly.curvalue);
+		break;
+
+	case ID_CHATHEIGHT:
+		switch (s_preferences.chatheight.curvalue) {
+		case 0:
+			trap_Cvar_SetValue("cg_chatHeight", 4);
+			break;
+		case 1:
+			trap_Cvar_SetValue("cg_chatHeight", 6);
+			break;
+		case 2:
+			trap_Cvar_SetValue("cg_chatHeight", 8);
+			break;
+		}
+		break;
+
+	case ID_BOTCHAT:
+		if (s_preferences.botchat.curvalue != 0) {
+			trap_Cvar_SetValue("bot_nochat", 0);
+			if (s_preferences.botchat.curvalue == 2) {
+				trap_Cvar_SetValue("bot_fastchat", 1);
+			} else {
+				trap_Cvar_SetValue("bot_fastchat", 0);
+			}
+		} else {
+			trap_Cvar_SetValue("bot_nochat", 1);
+		}
 		break;
 
 	case ID_GLOWMODEL:
@@ -292,10 +406,6 @@ static void Preferences_Event(void *ptr, int notification) {
 		trap_Cvar_SetValue("cg_drawTeamOverlay", s_preferences.drawteamoverlay.curvalue);
 		break;
 
-	case ID_BACK:
-		UI_PopMenu();
-		break;
-
 	case ID_FFAHUD:
 		trap_Cvar_SetValue("cg_wopFFAhud", s_preferences.ffahud.curvalue);
 		break;
@@ -307,12 +417,15 @@ static void Preferences_Event(void *ptr, int notification) {
 	case ID_TIMER:
 		trap_Cvar_SetValue("cg_drawTimer", s_preferences.timer.curvalue);
 		break;
+
 	case ID_FPS:
 		trap_Cvar_SetValue("cg_drawFPS", s_preferences.fps.curvalue);
 		break;
+
 	case ID_UPS:
 		trap_Cvar_SetValue("cg_drawUPS", s_preferences.ups.curvalue);
 		break;
+
 	case ID_REALTIME:
 		trap_Cvar_SetValue("cg_drawRealTime", s_preferences.realtime.curvalue);
 		break;
@@ -320,6 +433,7 @@ static void Preferences_Event(void *ptr, int notification) {
 	case ID_WALLHACKLPS:
 	case ID_WALLHACKTEAMMATES:
 	case ID_WALLHACKBALLOONS:
+	case ID_WALLHACKFREEZETAG:
 	case ID_WALLHACKHSTATION:
 	case ID_WALLHACKSYCTELE: {
 		// this is only necessary if cg_icons contains flags that we don't cover here
@@ -334,6 +448,9 @@ static void Preferences_Event(void *ptr, int notification) {
 		if (s_preferences.whTeamMates.curvalue) {
 			icons |= ICON_TEAMMATE;
 		}
+		if (s_preferences.whFreezeTag.curvalue) {
+			icons |= ICON_FREEZETAG;
+		}
 		if (s_preferences.whHStations.curvalue) {
 			icons |= ICON_HEALTHSTATION;
 		}
@@ -346,26 +463,28 @@ static void Preferences_Event(void *ptr, int notification) {
 	}
 
 	case ID_CONNOTIFY:
-		switch (s_preferences.con_notifytime.curvalue) {
+		switch (s_preferences.connotify.curvalue) {
 		case 0:
-			trap_Cvar_Set("con_notifytime", "3");
+			trap_Cvar_SetValue("con_notifytime", -2);
 			break;
 		case 1:
-			trap_Cvar_Set("con_notifytime", "8");
+			trap_Cvar_SetValue("con_notifytime", -4);
 			break;
 		case 2:
-			trap_Cvar_Set("con_notifytime", "-5");
+			trap_Cvar_SetValue("con_notifytime", -6);
 			break;
 		case 3:
-			trap_Cvar_Set("con_notifytime", "-10");
+			trap_Cvar_SetValue("con_notifytime", -8);
 			break;
 		}
 		break;
-	case ID_LENSFLARE:
-		trap_Cvar_Set("cg_drawLensflare", va("%d", s_preferences.lensFlare.curvalue));
+
+	case ID_DRAWCHATICON:
+		trap_Cvar_SetValue("cg_drawChatIcon", s_preferences.drawchaticon.curvalue);
 		break;
-	case ID_MORE:
-		SwitchPage();
+
+	case ID_BACK:
+		UI_PopMenu();
 		break;
 	}
 }
@@ -414,9 +533,13 @@ static void Crosshair_Draw(void *self) {
 	UI_DrawHandlePic(x + SMALLCHAR_WIDTH, y - 4, 24, 24, s_preferences.crosshairShader[s->curvalue]);
 }
 
+/*
+===============
+Preferences_MenuInit
+===============
+*/
 static void Preferences_MenuInit(void) {
 	int y;
-	int yp1, yp2;
 
 	memset(&s_preferences, 0, sizeof(preferences_t));
 
@@ -426,11 +549,48 @@ static void Preferences_MenuInit(void) {
 	s_preferences.menu.fullscreen = qtrue;
 	s_preferences.menu.bgparts = BGP_GAMEOPTIONS | BGP_SIMPLEBG;
 
-	y = 156;
-	// page 1
+	//menu
+	s_preferences.hud.generic.type = MTYPE_BITMAP;
+	s_preferences.hud.generic.name = HUD0;
+	s_preferences.hud.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
+	s_preferences.hud.generic.callback = Preferences_Event;
+	s_preferences.hud.generic.id = ID_HUD;
+	s_preferences.hud.generic.x = 420;
+	s_preferences.hud.generic.y = 40;
+	s_preferences.hud.width = 80;
+	s_preferences.hud.height = 40;
+	s_preferences.hud.focuspic = HUD1;
+	s_preferences.hud.focuspicinstead = qtrue;
+
+	s_preferences.chat.generic.type = MTYPE_BITMAP;
+	s_preferences.chat.generic.name = CHAT0;
+	s_preferences.chat.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
+	s_preferences.chat.generic.callback = Preferences_Event;
+	s_preferences.chat.generic.id = ID_CHAT;
+	s_preferences.chat.generic.x = 520;
+	s_preferences.chat.generic.y = 50;
+	s_preferences.chat.width = 80;
+	s_preferences.chat.height = 40;
+	s_preferences.chat.focuspic = CHAT1;
+	s_preferences.chat.focuspicinstead = qtrue;
+
+	s_preferences.help.generic.type = MTYPE_BITMAP;
+	s_preferences.help.generic.name = HELP0;
+	s_preferences.help.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
+	s_preferences.help.generic.callback = Preferences_Event;
+	s_preferences.help.generic.id = ID_HELP;
+	s_preferences.help.generic.x = 450;
+	s_preferences.help.generic.y = 85;
+	s_preferences.help.width = 80;
+	s_preferences.help.height = 40;
+	s_preferences.help.focuspic = HELP1;
+	s_preferences.help.focuspicinstead = qtrue;
+
+	y = YPOSITION;
+	// hud options
 	s_preferences.crosshair.generic.type = MTYPE_TEXT;
 	s_preferences.crosshair.generic.flags = QMF_SMALLFONT | QMF_NODEFAULTINIT | QMF_OWNERDRAW;
-	s_preferences.crosshair.generic.x = PREFERENCES_X_POS;
+	s_preferences.crosshair.generic.x = XPOSITION;
 	s_preferences.crosshair.generic.y = y;
 	s_preferences.crosshair.generic.name = "Crosshair:";
 	s_preferences.crosshair.generic.callback = Preferences_Event;
@@ -439,44 +599,41 @@ static void Preferences_MenuInit(void) {
 	s_preferences.crosshair.generic.top = y - 4;
 	s_preferences.crosshair.generic.bottom = y + 20;
 	s_preferences.crosshair.generic.left =
-		PREFERENCES_X_POS - ((strlen(s_preferences.crosshair.generic.name) + 1) * SMALLCHAR_WIDTH);
-	s_preferences.crosshair.generic.right = PREFERENCES_X_POS + 48;
-
-	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.drawteamoverlay.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.drawteamoverlay.generic.name = "Draw Team Overlay:";
-	s_preferences.drawteamoverlay.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.drawteamoverlay.generic.callback = Preferences_Event;
-	s_preferences.drawteamoverlay.generic.id = ID_DRAWTEAMOVERLAY;
-	s_preferences.drawteamoverlay.generic.x = PREFERENCES_X_POS;
-	s_preferences.drawteamoverlay.generic.y = y;
-	s_preferences.drawteamoverlay.generic.toolTip = "Enable this to see an overview "
-													"of 4 of your team mates to the left on your HUD in a team game.";
+		XPOSITION - ((strlen(s_preferences.crosshair.generic.name) + 1) * SMALLCHAR_WIDTH);
+	s_preferences.crosshair.generic.right = XPOSITION + 48;
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.ffahud.generic.type = MTYPE_SPINCONTROL;
-	s_preferences.ffahud.generic.name = "FFA Hud:";
+	s_preferences.ffahud.generic.name = "FFA HUD Design:";
 	s_preferences.ffahud.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.ffahud.generic.callback = Preferences_Event;
 	s_preferences.ffahud.generic.id = ID_FFAHUD;
-	s_preferences.ffahud.generic.x = PREFERENCES_X_POS;
+	s_preferences.ffahud.generic.x = XPOSITION;
 	s_preferences.ffahud.generic.y = y;
 	s_preferences.ffahud.itemnames = ffahud_names;
 
 	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.con_notifytime.generic.type = MTYPE_SPINCONTROL;
-	s_preferences.con_notifytime.generic.name = "Chat:";
-	s_preferences.con_notifytime.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.con_notifytime.generic.callback = Preferences_Event;
-	s_preferences.con_notifytime.generic.id = ID_CONNOTIFY;
-	s_preferences.con_notifytime.generic.x = PREFERENCES_X_POS;
-	s_preferences.con_notifytime.generic.y = y;
-	s_preferences.con_notifytime.itemnames = con_notifytime_strs;
-	s_preferences.con_notifytime.generic.toolTip =
-		"Select whether you prefer "
-		"chat text that appears at the top of the screen to appear for a longer "
-		"or shorter period of time and with or without the respective players "
-		"character icon appearing next to the chat text.";
+	s_preferences.identifytarget.generic.type = MTYPE_RADIOBUTTON;
+	s_preferences.identifytarget.generic.name = "Identify Target:";
+	s_preferences.identifytarget.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.identifytarget.generic.callback = Preferences_Event;
+	s_preferences.identifytarget.generic.id = ID_IDENTIFYTARGET;
+	s_preferences.identifytarget.generic.x = XPOSITION;
+	s_preferences.identifytarget.generic.y = y;
+	s_preferences.identifytarget.generic.toolTip =
+		"Enable this to show the name of the player you actively have in your crosshair. Player name will disappear "
+		"once out of your crosshair.";
+
+	y += BIGCHAR_HEIGHT + 2;
+	s_preferences.drawteamoverlay.generic.type = MTYPE_RADIOBUTTON;
+	s_preferences.drawteamoverlay.generic.name = "Team Overlay:";
+	s_preferences.drawteamoverlay.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.drawteamoverlay.generic.callback = Preferences_Event;
+	s_preferences.drawteamoverlay.generic.id = ID_DRAWTEAMOVERLAY;
+	s_preferences.drawteamoverlay.generic.x = XPOSITION;
+	s_preferences.drawteamoverlay.generic.y = y;
+	s_preferences.drawteamoverlay.generic.toolTip = "Enable this to see an overview "
+													"of 4 of your team mates to the left on your HUD in a team game.";
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.timer.generic.type = MTYPE_RADIOBUTTON;
@@ -484,7 +641,7 @@ static void Preferences_MenuInit(void) {
 	s_preferences.timer.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.timer.generic.callback = Preferences_Event;
 	s_preferences.timer.generic.id = ID_TIMER;
-	s_preferences.timer.generic.x = PREFERENCES_X_POS;
+	s_preferences.timer.generic.x = XPOSITION;
 	s_preferences.timer.generic.y = y;
 
 	y += BIGCHAR_HEIGHT + 2;
@@ -493,7 +650,7 @@ static void Preferences_MenuInit(void) {
 	s_preferences.timeleft.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.timeleft.generic.callback = Preferences_Event;
 	s_preferences.timeleft.generic.id = ID_TIMELEFT;
-	s_preferences.timeleft.generic.x = PREFERENCES_X_POS;
+	s_preferences.timeleft.generic.x = XPOSITION;
 	s_preferences.timeleft.generic.y = y;
 
 	y += BIGCHAR_HEIGHT + 2;
@@ -502,7 +659,7 @@ static void Preferences_MenuInit(void) {
 	s_preferences.realtime.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.realtime.generic.callback = Preferences_Event;
 	s_preferences.realtime.generic.id = ID_REALTIME;
-	s_preferences.realtime.generic.x = PREFERENCES_X_POS;
+	s_preferences.realtime.generic.x = XPOSITION;
 	s_preferences.realtime.generic.y = y;
 
 	y += BIGCHAR_HEIGHT + 2;
@@ -511,7 +668,7 @@ static void Preferences_MenuInit(void) {
 	s_preferences.ups.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.ups.generic.callback = Preferences_Event;
 	s_preferences.ups.generic.id = ID_UPS;
-	s_preferences.ups.generic.x = PREFERENCES_X_POS;
+	s_preferences.ups.generic.x = XPOSITION;
 	s_preferences.ups.generic.y = y;
 
 	y += BIGCHAR_HEIGHT + 2;
@@ -520,7 +677,7 @@ static void Preferences_MenuInit(void) {
 	s_preferences.fps.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.fps.generic.callback = Preferences_Event;
 	s_preferences.fps.generic.id = ID_FPS;
-	s_preferences.fps.generic.x = PREFERENCES_X_POS;
+	s_preferences.fps.generic.x = XPOSITION;
 	s_preferences.fps.generic.y = y;
 
 	y += BIGCHAR_HEIGHT + 2;
@@ -529,7 +686,7 @@ static void Preferences_MenuInit(void) {
 	s_preferences.forcemodel.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.forcemodel.generic.callback = Preferences_Event;
 	s_preferences.forcemodel.generic.id = ID_FORCEMODEL;
-	s_preferences.forcemodel.generic.x = PREFERENCES_X_POS;
+	s_preferences.forcemodel.generic.x = XPOSITION;
 	s_preferences.forcemodel.generic.y = y;
 	s_preferences.forcemodel.generic.toolTip = "Enable this to force seeing all opponents as your character in game.";
 
@@ -539,203 +696,183 @@ static void Preferences_MenuInit(void) {
 	s_preferences.glowmodel.generic.flags = (QMF_SMALLFONT | QMF_HIDDEN);
 	s_preferences.glowmodel.generic.callback = Preferences_Event;
 	s_preferences.glowmodel.generic.id = ID_GLOWMODEL;
-	s_preferences.glowmodel.generic.x = PREFERENCES_X_POS;
+	s_preferences.glowmodel.generic.x = XPOSITION;
 	s_preferences.glowmodel.generic.y = y;
 	s_preferences.glowmodel.generic.toolTip = "Enable this to see glowing player models.";
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.glowcolor.generic.type = MTYPE_SPINCONTROL;
-	s_preferences.glowcolor.generic.name = "Glowcolor:";
+	s_preferences.glowcolor.generic.name = "Glow Color:";
 	s_preferences.glowcolor.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.glowcolor.generic.callback = Preferences_Event;
 	s_preferences.glowcolor.generic.id = ID_GLOWCOLOR;
-	s_preferences.glowcolor.generic.x = PREFERENCES_X_POS;
+	s_preferences.glowcolor.generic.x = XPOSITION;
 	s_preferences.glowcolor.generic.y = y;
 	s_preferences.glowcolor.itemnames = glowcolor_names;
-	// query curvalue
+
+	// chat options
+	y = YPOSITION;
+	s_preferences.connotify.generic.type = MTYPE_SPINCONTROL;
+	s_preferences.connotify.generic.name = "Notification Time:";
+	s_preferences.connotify.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.connotify.generic.callback = Preferences_Event;
+	s_preferences.connotify.generic.id = ID_CONNOTIFY;
+	s_preferences.connotify.generic.x = XPOSITION;
+	s_preferences.connotify.generic.y = y;
+	s_preferences.connotify.itemnames = connotify_names;
+	s_preferences.connotify.generic.toolTip = "Select whether you prefer notifications to appear short (2s), default (4s), long (6s), or maximum (8s) at the top of the screen.";
 
 	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.identifytarget.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.identifytarget.generic.name = "Identify Target:";
-	s_preferences.identifytarget.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.identifytarget.generic.callback = Preferences_Event;
-	s_preferences.identifytarget.generic.id = ID_IDENTIFYTARGET;
-	s_preferences.identifytarget.generic.x = PREFERENCES_X_POS;
-	s_preferences.identifytarget.generic.y = y;
-	s_preferences.identifytarget.generic.toolTip =
-		"Enable this to show the name of the player you actively have in your crosshair. Player name will disappear "
-		"once out of your crosshair.";
-
-	yp1 = y + BIGCHAR_HEIGHT + 2;
-
-	// page 2
-	y = 156;
-	s_preferences.simpleitems.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.simpleitems.generic.name = "Simple Items:";
-	s_preferences.simpleitems.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.simpleitems.generic.callback = Preferences_Event;
-	s_preferences.simpleitems.generic.id = ID_SIMPLEITEMS;
-	s_preferences.simpleitems.generic.x = PREFERENCES_X_POS;
-	s_preferences.simpleitems.generic.y = y;
-	s_preferences.simpleitems.generic.toolTip = "Enable this to see all 3d items in game replaced with 2d icons.";
+	s_preferences.chatheight.generic.type = MTYPE_SPINCONTROL;
+	s_preferences.chatheight.generic.name = "Notification Space:";
+	s_preferences.chatheight.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.chatheight.generic.callback = Preferences_Event;
+	s_preferences.chatheight.generic.id = ID_CHATHEIGHT;
+	s_preferences.chatheight.generic.x = XPOSITION;
+	s_preferences.chatheight.generic.y = y;
+	s_preferences.chatheight.itemnames = chatheight_names;
+	s_preferences.chatheight.generic.toolTip = "Select whether you prefer notifications to appear default (up to 4 lines), expanded (up to 6 lines), or maximum (up to 8 lines) at the top of the screen.";
 
 	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.wallmarks.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.wallmarks.generic.name = "Marks on Walls:";
-	s_preferences.wallmarks.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.wallmarks.generic.callback = Preferences_Event;
-	s_preferences.wallmarks.generic.id = ID_WALLMARKS;
-	s_preferences.wallmarks.generic.x = PREFERENCES_X_POS;
-	s_preferences.wallmarks.generic.y = y;
-	s_preferences.wallmarks.generic.toolTip = "Enable this to see weapon effects on walls.";
+	s_preferences.drawchaticon.generic.type = MTYPE_RADIOBUTTON;
+	s_preferences.drawchaticon.generic.name = "Draw Player Icon:";
+	s_preferences.drawchaticon.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.drawchaticon.generic.callback = Preferences_Event;
+	s_preferences.drawchaticon.generic.id = ID_DRAWCHATICON;
+	s_preferences.drawchaticon.generic.x = XPOSITION;
+	s_preferences.drawchaticon.generic.y = y;
+	s_preferences.drawchaticon.generic.toolTip = "Disable this to remove the player icon at the beginning of a chat notification.";
 
 	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.dynamiclights.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.dynamiclights.generic.name = "Dynamic Lights:";
-	s_preferences.dynamiclights.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.dynamiclights.generic.callback = Preferences_Event;
-	s_preferences.dynamiclights.generic.id = ID_DYNAMICLIGHTS;
-	s_preferences.dynamiclights.generic.x = PREFERENCES_X_POS;
-	s_preferences.dynamiclights.generic.y = y;
+	s_preferences.chatbeep.generic.type = MTYPE_RADIOBUTTON;
+	s_preferences.chatbeep.generic.name = "Play Chat Beep:";
+	s_preferences.chatbeep.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.chatbeep.generic.callback = Preferences_Event;
+	s_preferences.chatbeep.generic.id = ID_CHATBEEP;
+	s_preferences.chatbeep.generic.x = XPOSITION;
+	s_preferences.chatbeep.generic.y = y;
+	s_preferences.chatbeep.generic.toolTip = "Disable this to switch off the beep of all chat notifications.";
 
 	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.highqualitysky.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.highqualitysky.generic.name = "High Quality Sky:";
-	s_preferences.highqualitysky.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.highqualitysky.generic.callback = Preferences_Event;
-	s_preferences.highqualitysky.generic.id = ID_HIGHQUALITYSKY;
-	s_preferences.highqualitysky.generic.x = PREFERENCES_X_POS;
-	s_preferences.highqualitysky.generic.y = y;
+	s_preferences.botchat.generic.type = MTYPE_SPINCONTROL;
+	s_preferences.botchat.generic.name = "Chatting Bots:";
+	s_preferences.botchat.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.botchat.generic.callback = Preferences_Event;
+	s_preferences.botchat.generic.id = ID_BOTCHAT;
+	s_preferences.botchat.generic.x = XPOSITION;
+	s_preferences.botchat.generic.y = y;
+	s_preferences.botchat.itemnames = botchat_names;
+	s_preferences.botchat.generic.toolTip = "Set this to off to prevent the bots from chatting and silence them, or set it to often to make the bots more talkative.";
 
 	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.flares.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.flares.generic.name = "Dynamic Flares:";
-	s_preferences.flares.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.flares.generic.callback = Preferences_Event;
-	s_preferences.flares.generic.id = ID_FLARES;
-	s_preferences.flares.generic.x = PREFERENCES_X_POS;
-	s_preferences.flares.generic.y = y;
+	s_preferences.teamchatsonly.generic.type = MTYPE_RADIOBUTTON;
+	s_preferences.teamchatsonly.generic.name = "Team Chats Only:";
+	s_preferences.teamchatsonly.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.teamchatsonly.generic.callback = Preferences_Event;
+	s_preferences.teamchatsonly.generic.id = ID_TEAMCHATSONLY;
+	s_preferences.teamchatsonly.generic.x = XPOSITION;
+	s_preferences.teamchatsonly.generic.y = y;
+	s_preferences.teamchatsonly.generic.toolTip = "Enable this to force only chat messages from your teammates to be displayed.";
 
-	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.synceveryframe.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.synceveryframe.generic.name = "Sync Every Frame:";
-	s_preferences.synceveryframe.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.synceveryframe.generic.callback = Preferences_Event;
-	s_preferences.synceveryframe.generic.id = ID_SYNCEVERYFRAME;
-	s_preferences.synceveryframe.generic.x = PREFERENCES_X_POS;
-	s_preferences.synceveryframe.generic.y = y;
-	s_preferences.synceveryframe.generic.toolTip =
-		"Also known as V-SYNC. Enable only if you're experiencing graphical horizontal tearing artifacts.";
-
-	y += BIGCHAR_HEIGHT + 2;
-	s_preferences.lensFlare.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.lensFlare.generic.name = "Show Lens Flare:";
-	s_preferences.lensFlare.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
-	s_preferences.lensFlare.generic.callback = Preferences_Event;
-	s_preferences.lensFlare.generic.id = ID_LENSFLARE;
-	s_preferences.lensFlare.generic.x = PREFERENCES_X_POS;
-	s_preferences.lensFlare.generic.y = y;
+	// help options
+	y = YPOSITION;
+	s_preferences.whIcons.generic.type = MTYPE_TEXT;
+	s_preferences.whIcons.generic.flags = QMF_HIDDEN;
+	s_preferences.whIcons.generic.x = XPOSITION - 20;
+	s_preferences.whIcons.generic.y = y;
+	s_preferences.whIcons.string = "Wallhack Icons";
+	s_preferences.whIcons.style = (UI_CENTER | UI_SMALLFONT);
+	s_preferences.whIcons.color = menu_text_color;
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.whTeamMates.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.whTeamMates.generic.name = "Teammate Icon:";
+	s_preferences.whTeamMates.generic.name = "Teammate:";
 	s_preferences.whTeamMates.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.whTeamMates.generic.callback = Preferences_Event;
 	s_preferences.whTeamMates.generic.id = ID_WALLHACKTEAMMATES;
-	s_preferences.whTeamMates.generic.x = PREFERENCES_X_POS;
+	s_preferences.whTeamMates.generic.x = XPOSITION;
 	s_preferences.whTeamMates.generic.y = y;
-	s_preferences.whTeamMates.generic.toolTip = "Show a WoP logo over your teammates heads, visible through walls.";
+	s_preferences.whTeamMates.generic.toolTip =
+		"Show a PAD logo over your teammates heads, visible through walls, to help you find them.";
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.whHStations.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.whHStations.generic.name = "Health Station Icon:";
+	s_preferences.whHStations.generic.name = "Health Station:";
 	s_preferences.whHStations.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.whHStations.generic.callback = Preferences_Event;
 	s_preferences.whHStations.generic.id = ID_WALLHACKHSTATION;
-	s_preferences.whHStations.generic.x = PREFERENCES_X_POS;
+	s_preferences.whHStations.generic.x = XPOSITION;
 	s_preferences.whHStations.generic.y = y;
 	s_preferences.whHStations.generic.toolTip =
-		"Show an icon over evey health station, visible through walls, to help you find them.";
+		"Show a heart icon over evey health station, visible through walls, to help you find them.";
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.whSycTele.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.whSycTele.generic.name = "Spray Teleporter Icon:";
+	s_preferences.whSycTele.generic.name = "Sprayroom Teleporter:";
 	s_preferences.whSycTele.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.whSycTele.generic.callback = Preferences_Event;
 	s_preferences.whSycTele.generic.id = ID_WALLHACKSYCTELE;
-	s_preferences.whSycTele.generic.x = PREFERENCES_X_POS;
+	s_preferences.whSycTele.generic.x = XPOSITION;
 	s_preferences.whSycTele.generic.y = y;
 	s_preferences.whSycTele.generic.toolTip =
-		"Show an icon over the sprayroom teleporter, visible through walls, to help you find it.";
+		"Show an arrow icon over the sprayroom teleporter in Spray Your Color, visible through walls, to help you find it.";
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.whBalloons.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.whBalloons.generic.name = "Balloon Box Icon:";
+	s_preferences.whBalloons.generic.name = "Balloon Box:";
 	s_preferences.whBalloons.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.whBalloons.generic.callback = Preferences_Event;
 	s_preferences.whBalloons.generic.id = ID_WALLHACKBALLOONS;
-	s_preferences.whBalloons.generic.x = PREFERENCES_X_POS;
+	s_preferences.whBalloons.generic.x = XPOSITION;
 	s_preferences.whBalloons.generic.y = y;
 	s_preferences.whBalloons.generic.toolTip =
-		"Show an icon over balloon boxes, visible through walls, to help you find them.";
+		"Show an balloon icon over balloon boxes in Big Ballon, visible through walls, to help you find them.";
 
 	y += BIGCHAR_HEIGHT + 2;
 	s_preferences.whLPS.generic.type = MTYPE_RADIOBUTTON;
-	s_preferences.whLPS.generic.name = "LPS Arrow Icon:";
+	s_preferences.whLPS.generic.name = "LPS Arrow:";
 	s_preferences.whLPS.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
 	s_preferences.whLPS.generic.callback = Preferences_Event;
 	s_preferences.whLPS.generic.id = ID_WALLHACKLPS;
-	s_preferences.whLPS.generic.x = PREFERENCES_X_POS;
+	s_preferences.whLPS.generic.x = XPOSITION;
 	s_preferences.whLPS.generic.y = y;
 	s_preferences.whLPS.generic.toolTip =
 		"Show an arrow icon over every player in Last Pad Standing, visible through walls, to help you find them.";
 
-	yp2 = y + BIGCHAR_HEIGHT + 2;
-
-	// place the "more" button
-	y = MAX(yp1, yp2) + BIGCHAR_HEIGHT;
-
-	s_preferences.more.generic.type = MTYPE_TEXTS;
-	s_preferences.more.fontHeight = 20.0f;
-	s_preferences.more.generic.flags = QMF_CENTER_JUSTIFY; //|QMF_PULSEIFFOCUS;
-	s_preferences.more.generic.x = PREFERENCES_X_POS;
-	s_preferences.more.generic.y = y;
-	s_preferences.more.generic.id = ID_MORE;
-	s_preferences.more.generic.callback = Preferences_Event;
-	s_preferences.more.string = "More";
-	s_preferences.more.color = color_lightOrange;
-	s_preferences.more.focuscolor = color_orange;
-	s_preferences.more.style = UI_CENTER | UI_SMALLFONT;
+	y += BIGCHAR_HEIGHT + 2;
+	s_preferences.whFreezeTag.generic.type = MTYPE_RADIOBUTTON;
+	s_preferences.whFreezeTag.generic.name = "Frozen Teammate:";
+	s_preferences.whFreezeTag.generic.flags = QMF_SMALLFONT | QMF_HIDDEN;
+	s_preferences.whFreezeTag.generic.callback = Preferences_Event;
+	s_preferences.whFreezeTag.generic.id = ID_WALLHACKFREEZETAG;
+	s_preferences.whFreezeTag.generic.x = XPOSITION;
+	s_preferences.whFreezeTag.generic.y = y;
+	s_preferences.whFreezeTag.generic.toolTip =
+		"Show a freeze icon over frozen teammates in Freeze Tag, visible through walls, to help you find them.";
 
 	s_preferences.back.generic.type = MTYPE_BITMAP;
-	s_preferences.back.generic.name = ART_BACK0;
+	s_preferences.back.generic.name = BACK0;
 	s_preferences.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
-	s_preferences.back.generic.x = 552; // 8;
+	s_preferences.back.generic.x = 552;
 	s_preferences.back.generic.y = 440;
 	s_preferences.back.generic.id = ID_BACK;
 	s_preferences.back.generic.callback = Preferences_Event;
 	s_preferences.back.width = 80;
 	s_preferences.back.height = 40;
-	s_preferences.back.focuspic = ART_BACK1;
+	s_preferences.back.focuspic = BACK1;
 	s_preferences.back.focuspicinstead = qtrue;
 
-	/*
-	(menucommon_s *)&s_preferences.crosshair,
-	(menucommon_s *)&s_preferences.drawteamoverlay,
-	(menucommon_s *)&s_preferences.ffahud,
-	(menucommon_s *)&s_preferences.con_notifytime,
-	(menucommon_s *)&s_preferences.timer,
-	(menucommon_s *)&s_preferences.timeleft,
-	(menucommon_s *)&s_preferences.realtime,
-	(menucommon_s *)&s_preferences.ups,
-	(menucommon_s *)&s_preferences.fps,
-	*/
+	// menu
+	Menu_AddItem(&s_preferences.menu, &s_preferences.back);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.hud);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.chat);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.help);
 
-	// page 1
+	// hud options
 	Menu_AddItem(&s_preferences.menu, &s_preferences.crosshair);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.drawteamoverlay);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.ffahud);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.con_notifytime);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.identifytarget);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.drawteamoverlay);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.timer);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.timeleft);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.realtime);
@@ -744,29 +881,30 @@ static void Preferences_MenuInit(void) {
 	Menu_AddItem(&s_preferences.menu, &s_preferences.forcemodel);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.glowmodel);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.glowcolor);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.identifytarget);
-	// page 2
-	Menu_AddItem(&s_preferences.menu, &s_preferences.simpleitems);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.wallmarks);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.dynamiclights);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.highqualitysky);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.flares);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.synceveryframe);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.lensFlare);
+
+	// chat options
+	Menu_AddItem(&s_preferences.menu, &s_preferences.connotify);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.chatheight);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.drawchaticon);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.chatbeep);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.botchat);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.teamchatsonly);
+
+	// help options
+	Menu_AddItem(&s_preferences.menu, &s_preferences.whIcons);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.whTeamMates);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.whHStations);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.whSycTele);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.whBalloons);
 	Menu_AddItem(&s_preferences.menu, &s_preferences.whLPS);
-
-	// misc
-	Menu_AddItem(&s_preferences.menu, &s_preferences.more);
-	Menu_AddItem(&s_preferences.menu, &s_preferences.back);
+	Menu_AddItem(&s_preferences.menu, &s_preferences.whFreezeTag);
 
 	Preferences_SetMenuItems();
-	// show items of the first page
-	page = 1;
-	SwitchPage();
+
+	// initial default section
+	s_preferences.section = O_HUD;
+
+	Options_Update();
 }
 
 /*
@@ -777,8 +915,15 @@ Preferences_Cache
 void Preferences_Cache(void) {
 	int n;
 
-	trap_R_RegisterShaderNoMip(ART_BACK0);
-	trap_R_RegisterShaderNoMip(ART_BACK1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
+	trap_R_RegisterShaderNoMip(HUD0);
+	trap_R_RegisterShaderNoMip(HUD1);
+	trap_R_RegisterShaderNoMip(CHAT0);
+	trap_R_RegisterShaderNoMip(CHAT1);
+	trap_R_RegisterShaderNoMip(HELP0);
+	trap_R_RegisterShaderNoMip(HELP1);
+
 	for (n = 0; n < NUM_CROSSHAIRS; n++) {
 		s_preferences.crosshairShader[n] = trap_R_RegisterShaderNoMip(va("gfx/2d/crosshair%c", 'a' + n));
 	}

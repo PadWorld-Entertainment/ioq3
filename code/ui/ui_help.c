@@ -13,15 +13,16 @@ HELP MENU
 
 #define HELPMENU_PATH "menu/help/"
 
-#define ART_PREV0 HELPMENU_PATH "arrowup0"
-#define ART_PREV1 HELPMENU_PATH "arrowup1"
-#define ART_NEXT0 HELPMENU_PATH "arrowdown0"
-#define ART_NEXT1 HELPMENU_PATH "arrowdown1"
-#define HM_PN_W 45
-#define HM_PN_H 27
-#define HM_PN_X0 266
-#define HM_PN_X1 329
-#define HM_PN_Y 350
+#define ARROWLT0 "menu/arrows/headyel_lt0"
+#define ARROWLT1 "menu/arrows/headyel_lt1"
+#define ARROWRT0 "menu/arrows/headyel_rt0"
+#define ARROWRT1 "menu/arrows/headyel_rt1"
+
+#define HM_PN_W 50
+#define HM_PN_H 20
+#define HM_PN_X0 260
+#define HM_PN_X1 330
+#define HM_PN_Y 352
 
 #define HMI_GAMETYPE_W 373
 #define HMI_GAMETYPE_H 395
@@ -48,29 +49,30 @@ static helpMenuInfo_t helpMenuInfo;
 // TODO: Use short gametype names from bg
 // Order needs to match gametype_t!
 static const char *HELP_GAMETYPE[] = {
-	"help_ffa",
-	//	"help_tourney",
-	//	"help_single", // ""
-	"help_syc", "help_lps", "help_team_ffa", "help_ctl", "help_team_syc", "help_bb",
-	"help_unknown" // must be the last entry!
+	"ffa",
+	//	"tourney",
+	//	"single", // ""
+	"syc", "lps", "ffa_team", "ft", "ctl", "syc_team", "bb",
+	"unknown" // must be the last entry!
 };
 
 // Must contain an entry for each gametype_t
 // Maps gametypes to array indices of HELP_GAMETYPE
 static const int GAMETYPE_REMAP[] = {
 	0, // GT_FFA
-	7, // GT_TOURNAMENT, no help
-	7, // GT_SINGLE_PLAYER, no help
-	1, // GT_SPRAY_FFA
+	8, // GT_TOURNAMENT, no help
+	8, // GT_SINGLE_PLAYER, no help
+	1, // GT_SPRAYFFA
 	2, // GT_LPS
 	3, // GT_TEAM
-	4, // GT_CTF
-	5, // GT_SPRAY
-	6, // GT_BALLOON
-	7, // GT_MAX_GAME_TYPE, invalid thus no help
+	4, // GT_FREEZETAG
+	5, // GT_CTF
+	6, // GT_SPRAY
+	7, // GT_BALLOON
+	8, // GT_MAX_GAME_TYPE, invalid thus no help
 };
 
-static const char *HELP_ITEM[] = {"help_powerups", "help_weapons"};
+static const char *HELP_ITEM[] = {"powerups", "weapons"};
 static const unsigned int NUM_HELP_ITEM = (sizeof(HELP_ITEM) / sizeof(HELP_ITEM[0]));
 
 static int helpMax, helpMin = 0;
@@ -257,8 +259,8 @@ static void UI_HelpMenu_Init(void) {
 	helpMenuInfo.prev.generic.y = HM_PN_Y;
 	helpMenuInfo.prev.width = HM_PN_W;
 	helpMenuInfo.prev.height = HM_PN_H;
-	helpMenuInfo.prev.generic.name = ART_PREV0;
-	helpMenuInfo.prev.focuspic = ART_PREV1;
+	helpMenuInfo.prev.generic.name = ARROWLT0;
+	helpMenuInfo.prev.focuspic = ARROWLT1;
 	helpMenuInfo.prev.generic.flags = QMF_HIGHLIGHT_IF_FOCUS;
 	helpMenuInfo.prev.generic.callback = UI_HelpMenu_Event;
 
@@ -268,8 +270,8 @@ static void UI_HelpMenu_Init(void) {
 	helpMenuInfo.next.generic.y = HM_PN_Y;
 	helpMenuInfo.next.width = HM_PN_W;
 	helpMenuInfo.next.height = HM_PN_H;
-	helpMenuInfo.next.generic.name = ART_NEXT0;
-	helpMenuInfo.next.focuspic = ART_NEXT1;
+	helpMenuInfo.next.generic.name = ARROWRT0;
+	helpMenuInfo.next.focuspic = ARROWRT1;
 	helpMenuInfo.next.generic.flags = QMF_HIGHLIGHT_IF_FOCUS;
 	helpMenuInfo.next.generic.callback = UI_HelpMenu_Event;
 
@@ -285,11 +287,10 @@ UI_HelpMenu_Cache
 =================
 */
 void UI_HelpMenu_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_PREV0);
-	trap_R_RegisterShaderNoMip(ART_PREV1);
-
-	trap_R_RegisterShaderNoMip(ART_NEXT0);
-	trap_R_RegisterShaderNoMip(ART_NEXT1);
+	trap_R_RegisterShaderNoMip(ARROWLT0);
+	trap_R_RegisterShaderNoMip(ARROWLT1);
+	trap_R_RegisterShaderNoMip(ARROWRT0);
+	trap_R_RegisterShaderNoMip(ARROWRT1);
 }
 
 /*

@@ -30,10 +30,12 @@ ADD BOTS MENU
 
 #include "ui_local.h"
 
-#define ART_ARROWUP0 "menu/mods/arrowup0"
-#define ART_ARROWUP1 "menu/mods/arrowup1"
-#define ART_ARROWDOWN0 "menu/mods/arrowdown0"
-#define ART_ARROWDOWN1 "menu/mods/arrowdown1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define ARROWUP0 "menu/arrows/headyel_up0"
+#define ARROWUP1 "menu/arrows/headyel_up1"
+#define ARROWDN0 "menu/arrows/headyel_dn0"
+#define ARROWDN1 "menu/arrows/headyel_dn1"
 
 #define NUM_BOTS 6
 
@@ -62,7 +64,7 @@ typedef struct {
 	menulist_s team;
 
 	menutext_s go;
-	menutext_s back;
+	menubitmap_s back;
 	menubitmap1024s_s arrowup;
 	menubitmap1024s_s arrowdown;
 
@@ -276,8 +278,8 @@ static void UI_AddBotsMenu_Init(void) {
 	addBotsMenuInfo.arrowup.y = 236; // 204;
 	addBotsMenuInfo.arrowup.w = 29;
 	addBotsMenuInfo.arrowup.h = 74;
-	addBotsMenuInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	addBotsMenuInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWUP1);
+	addBotsMenuInfo.arrowup.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	addBotsMenuInfo.arrowup.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	addBotsMenuInfo.arrowup.generic.callback = UI_AddBotsMenu_UpEvent;
 	addBotsMenuInfo.arrowup.generic.id = ID_UP;
 
@@ -286,8 +288,8 @@ static void UI_AddBotsMenu_Init(void) {
 	addBotsMenuInfo.arrowdown.y = 406 - 74; // 374-74;
 	addBotsMenuInfo.arrowdown.w = 29;		// 38
 	addBotsMenuInfo.arrowdown.h = 74;		// 98
-	addBotsMenuInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	addBotsMenuInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	addBotsMenuInfo.arrowdown.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	addBotsMenuInfo.arrowdown.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	addBotsMenuInfo.arrowdown.generic.callback = UI_AddBotsMenu_DownEvent;
 	addBotsMenuInfo.arrowdown.generic.id = ID_DOWN;
 
@@ -338,30 +340,29 @@ static void UI_AddBotsMenu_Init(void) {
 		addBotsMenuInfo.team.generic.name = "Color:";
 	}
 
-	y += SMALLCHAR_HEIGHT;
 	addBotsMenuInfo.go.generic.type = MTYPE_TEXTS;
 	addBotsMenuInfo.go.fontHeight = 24.0f;
-	addBotsMenuInfo.go.generic.flags = QMF_RIGHT_JUSTIFY; //|QMF_PULSEIFFOCUS;
+	addBotsMenuInfo.go.generic.flags = QMF_CENTER_JUSTIFY; //|QMF_PULSEIFFOCUS;
 	addBotsMenuInfo.go.generic.callback = UI_AddBotsMenu_FightEvent;
 	addBotsMenuInfo.go.generic.id = ID_GO;
-	addBotsMenuInfo.go.generic.x = 380;
-	addBotsMenuInfo.go.generic.y = y;
+	addBotsMenuInfo.go.generic.x = 320;
+	addBotsMenuInfo.go.generic.y = 315;
 	addBotsMenuInfo.go.string = "ADD";
-	addBotsMenuInfo.go.style = UI_SMALLFONT | UI_RIGHT;
+	addBotsMenuInfo.go.style = (UI_CENTER | UI_SMALLFONT);
 	addBotsMenuInfo.go.color = color_black;
 	addBotsMenuInfo.go.focuscolor = color_orange;
 
-	addBotsMenuInfo.back.generic.type = MTYPE_TEXTS;
-	addBotsMenuInfo.back.fontHeight = 16.0f;
-	//	addBotsMenuInfo.back.generic.flags		= QMF_PULSEIFFOCUS;
-	addBotsMenuInfo.back.generic.callback = UI_AddBotsMenu_BackEvent;
+	addBotsMenuInfo.back.generic.type = MTYPE_BITMAP;
+	addBotsMenuInfo.back.generic.name = BACK0;
+	addBotsMenuInfo.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
+	addBotsMenuInfo.back.generic.x = 225;
+	addBotsMenuInfo.back.generic.y = 340;
 	addBotsMenuInfo.back.generic.id = ID_BACK;
-	addBotsMenuInfo.back.generic.x = 245;
-	addBotsMenuInfo.back.generic.y = 315;
-	addBotsMenuInfo.back.string = "BACK";
-	addBotsMenuInfo.back.style = UI_SMALLFONT;
-	addBotsMenuInfo.back.color = color_black;
-	addBotsMenuInfo.back.focuscolor = color_orange;
+	addBotsMenuInfo.back.generic.callback = UI_AddBotsMenu_BackEvent;
+	addBotsMenuInfo.back.width = 50;
+	addBotsMenuInfo.back.height = 25;
+	addBotsMenuInfo.back.focuspic = BACK1;
+	addBotsMenuInfo.back.focuspicinstead = qtrue;
 
 	addBotsMenuInfo.baseBotNum = 0;
 	addBotsMenuInfo.selectedBotNum = 0;
@@ -388,10 +389,8 @@ UI_AddBots_Cache
 =================
 */
 void UI_AddBots_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
 }
 
 /*

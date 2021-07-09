@@ -30,14 +30,14 @@ DEMOS MENU
 
 #include "ui_local.h"
 
-#define ART_BACK0 "menu/BtnBack0"
-#define ART_BACK1 "menu/BtnBack1"
-#define ART_GO0 "menu/demo/play0"
-#define ART_GO1 "menu/demo/play1"
-#define ART_ARROWUP0 "menu/demo/arrowup0"
-#define ART_ARROWUP1 "menu/demo/arrowup1"
-#define ART_ARROWDOWN0 "menu/demo/arrowdown0"
-#define ART_ARROWDOWN1 "menu/demo/arrowdown1"
+#define BACK0 "menu/buttons/back0"
+#define BACK1 "menu/buttons/back1"
+#define GO0 "menu/buttons/play_yel0"
+#define GO1 "menu/buttons/play_yel1"
+#define ARROWUP0 "menu/arrows/headblu_up0"
+#define ARROWUP1 "menu/arrows/headblu_up1"
+#define ARROWDN0 "menu/arrows/headblu_dn0"
+#define ARROWDN1 "menu/arrows/headblu_dn1"
 
 #define MAX_DEMOS 1024
 #define NAMEBUFSIZE (MAX_DEMOS * 32)
@@ -45,11 +45,8 @@ DEMOS MENU
 #define ID_BACK 10
 #define ID_GO 11
 #define ID_LIST 12
-#define ID_RIGHT 13
-#define ID_LEFT 14
-
-#define ARROWS_WIDTH 128
-#define ARROWS_HEIGHT 48
+#define ID_SCROLL_UP 13
+#define ID_SCROLL_DOWN 14
 
 typedef struct {
 	menuframework_s menu;
@@ -87,14 +84,12 @@ static void Demos_MenuEvent(void *ptr, int event) {
 		UI_PopMenu();
 		break;
 
-	case ID_LEFT:
-		//		ScrollList_Key( &s_demos.list, K_LEFTARROW );	// only !=1 columns
-		ScrollList_Key(&s_demos.list, K_PGUP); // only <=1 columns
+	case ID_SCROLL_UP:
+		ScrollList_Key(&s_demos.list, K_DOWNARROW);
 		break;
 
-	case ID_RIGHT:
-		//		ScrollList_Key( &s_demos.list, K_RIGHTARROW );	// only !=1 columns
-		ScrollList_Key(&s_demos.list, K_PGDN); // only <=1 columns
+	case ID_SCROLL_DOWN:
+		ScrollList_Key(&s_demos.list, K_UPARROW);
 		break;
 	}
 }
@@ -105,6 +100,19 @@ UI_DemosMenu_Key
 =================
 */
 static sfxHandle_t UI_DemosMenu_Key(int key) {
+
+	if (key == K_MWHEELUP) {
+		ScrollList_Key(&s_demos.list, K_UPARROW);
+	}
+	if (key == K_MWHEELDOWN) {
+		ScrollList_Key(&s_demos.list, K_DOWNARROW);
+	}
+
+	if (key == K_ENTER || key == K_KP_ENTER) {
+		UI_ForceMenuOff();
+		trap_Cmd_ExecuteText(EXEC_APPEND, va("demo %s\n", s_demos.list.itemnames[s_demos.list.curvalue]));
+	}
+
 	return Menu_DefaultKey(&s_demos.menu, key);
 }
 
@@ -142,23 +150,23 @@ static void Demos_MenuInit(void) {
 	s_demos.left.y = 240; // 524;
 	s_demos.left.w = 38;  // 99;
 	s_demos.left.h = 98;  // 38;
-	s_demos.left.shader = trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	s_demos.left.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWUP1);
+	s_demos.left.shader = trap_R_RegisterShaderNoMip(ARROWUP0);
+	s_demos.left.mouseovershader = trap_R_RegisterShaderNoMip(ARROWUP1);
 	s_demos.left.generic.callback = Demos_MenuEvent;
-	s_demos.left.generic.id = ID_LEFT;
+	s_demos.left.generic.id = ID_SCROLL_DOWN;
 
 	s_demos.right.generic.type = MTYPE_BITMAP1024S;
 	s_demos.right.x = 96;  // 561;
 	s_demos.right.y = 422; // 524;
 	s_demos.right.w = 38;  // 98;
 	s_demos.right.h = 98;  // 38;
-	s_demos.right.shader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	s_demos.right.mouseovershader = trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	s_demos.right.shader = trap_R_RegisterShaderNoMip(ARROWDN0);
+	s_demos.right.mouseovershader = trap_R_RegisterShaderNoMip(ARROWDN1);
 	s_demos.right.generic.callback = Demos_MenuEvent;
-	s_demos.right.generic.id = ID_RIGHT;
+	s_demos.right.generic.id = ID_SCROLL_UP;
 
 	s_demos.back.generic.type = MTYPE_BITMAP;
-	s_demos.back.generic.name = ART_BACK0;
+	s_demos.back.generic.name = BACK0;
 	s_demos.back.generic.flags = QMF_LEFT_JUSTIFY | QMF_PULSEIFFOCUS;
 	s_demos.back.generic.x = 8;
 	s_demos.back.generic.y = 440;
@@ -166,7 +174,7 @@ static void Demos_MenuInit(void) {
 	s_demos.back.generic.callback = Demos_MenuEvent;
 	s_demos.back.width = 80;
 	s_demos.back.height = 40;
-	s_demos.back.focuspic = ART_BACK1;
+	s_demos.back.focuspic = BACK1;
 	s_demos.back.focuspicinstead = qtrue;
 
 	s_demos.go.generic.type = MTYPE_BITMAP1024S;
@@ -174,8 +182,8 @@ static void Demos_MenuInit(void) {
 	s_demos.go.y = 350; // 633;
 	s_demos.go.w = 63;	// 181;
 	s_demos.go.h = 63;	// 110;
-	s_demos.go.shader = trap_R_RegisterShaderNoMip(ART_GO0);
-	s_demos.go.mouseovershader = trap_R_RegisterShaderNoMip(ART_GO1);
+	s_demos.go.shader = trap_R_RegisterShaderNoMip(GO0);
+	s_demos.go.mouseovershader = trap_R_RegisterShaderNoMip(GO1);
 	s_demos.go.generic.callback = Demos_MenuEvent;
 	s_demos.go.generic.id = ID_GO;
 
@@ -237,14 +245,10 @@ Demos_Cache
 =================
 */
 void Demos_Cache(void) {
-	trap_R_RegisterShaderNoMip(ART_BACK0);
-	trap_R_RegisterShaderNoMip(ART_BACK1);
-	trap_R_RegisterShaderNoMip(ART_GO0);
-	trap_R_RegisterShaderNoMip(ART_GO1);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP0);
-	trap_R_RegisterShaderNoMip(ART_ARROWUP1);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN0);
-	trap_R_RegisterShaderNoMip(ART_ARROWDOWN1);
+	trap_R_RegisterShaderNoMip(BACK0);
+	trap_R_RegisterShaderNoMip(BACK1);
+	trap_R_RegisterShaderNoMip(GO0);
+	trap_R_RegisterShaderNoMip(GO1);
 }
 
 /*

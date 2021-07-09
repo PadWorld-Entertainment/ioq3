@@ -127,8 +127,10 @@ static qboolean CG_ParseAnimationFile(const char *filename, clientInfo_t *ci) {
 			}
 			if (!Q_stricmp(token, "default") || !Q_stricmp(token, "normal")) {
 				ci->footsteps = FOOTSTEP_NORMAL;
-			} else if (!Q_stricmp(token, "boot")) {
-				ci->footsteps = FOOTSTEP_BOOT;
+			} else if (!Q_stricmp(token, "spurs")) {
+				ci->footsteps = FOOTSTEP_SPURS;
+			} else if (!Q_stricmp(token, "flesh")) {
+				ci->footsteps = FOOTSTEP_FLESH;
 			} else {
 				CG_Printf("Bad footsteps param in %s: %s\n", filename, token);
 			}
@@ -1073,6 +1075,10 @@ static void CG_RunLerpFrame(clientInfo_t *ci, lerpFrame_t *lf, int newAnimation,
 		return;
 	}
 
+	if (ci->ftIsFrozen) {
+		CG_SetLerpFrameAnimation(ci, lf, LEGS_IDLE);
+	}
+
 	// see if the animation sequence is switching
 	if (newAnimation != lf->animationNumber || !lf->animation) {
 		CG_SetLerpFrameAnimation(ci, lf, newAnimation);
@@ -1769,6 +1775,32 @@ static void CG_PlayerPowerups(centity_t *cent, refEntity_t *torso) {
 }
 
 /*
+=============
+Draw an iceblock that encloses part of the player.
+=============
+*/
+static void CG_PlayerFrozen(centity_t *cent, const refEntity_t *legs) {
+	refEntity_t iceblock;
+
+	if (!FT_PlayerIsFrozen(cent))
+		return;
+
+	memset(&iceblock, 0, sizeof(iceblock));
+	VectorCopy(legs->lightingOrigin, iceblock.lightingOrigin);
+	iceblock.shadowPlane = legs->shadowPlane;
+	iceblock.renderfx = legs->renderfx;
+
+	iceblock.hModel = cgs.media.iceblockModel;
+
+	AxisCopy(axisDefault, iceblock.axis);
+
+	// CG_PositionRotatedEntityOnTag( &iceblock, legs, legs->hModel, "tag_torso");
+	VectorCopy(legs->origin, iceblock.origin);
+
+	trap_R_AddRefEntityToScene(&iceblock);
+}
+
+/*
 ===============
 CG_PlayerFloatSprite
 
@@ -1807,7 +1839,7 @@ static void CG_PlayerFloatSprite(const centity_t *cent, qhandle_t shader, qboole
 	//       with the award in CTL.
 	if (cgs.gametype == GT_BALLOON && shader == cgs.media.medalPadStar) {
 		int team = cgs.clientinfo[cent->currentState.clientNum].team;
-		ent.customShader = cgs.media.hud_balloon; // FIXME: There is a separate icons/ballonicon
+		ent.customShader = cgs.media.hud_balloon;
 
 		ent.shaderRGBA[0] = ent.shaderRGBA[1] = ent.shaderRGBA[2] = 0;
 		ent.shaderRGBA[3] = 255;
@@ -1879,6 +1911,15 @@ static void CG_PlayerSprites(const centity_t *cent) {
 	}
 
 	team = cgs.clientinfo[cent->currentState.clientNum].team;
+
+	if (CG_FreezeTag() && FT_PlayerIsFrozen(cent)) {
+		if (cg.snap->ps.persistant[PERS_TEAM] == team) {
+			const qboolean wallhack = cg_icons.integer & ICON_FREEZETAG;
+			CG_PlayerFloatSprite(cent, cgs.media.freezeIconShader, wallhack);
+		}
+		return;
+	}
+
 	if (!(cent->currentState.eFlags & EF_DEAD) && cg.snap->ps.persistant[PERS_TEAM] == team &&
 		cgs.gametype >= GT_TEAM) {
 		if (cg_drawFriend.integer) {
@@ -2414,6 +2455,24 @@ void CG_Player(centity_t *cent) {
 		ci->lastPosSaveTime = 0; // "reset"
 	}
 
+	// save position for freezetag xray icons
+	if (CG_FreezeTag() && cent->currentState.number != cg.snap->ps.clientNum &&
+		cent->currentState.powerups & (1 << PW_FREEZE) && cg.snap->ps.persistant[PERS_TEAM] == ci->team) {
+		ci->curPos[0] = cent->lerpOrigin[0];
+		ci->curPos[1] = cent->lerpOrigin[1];
+		ci->curPos[2] = cent->lerpOrigin[2] + 64;
+		ci->lastPosSaveTime = cg.time;
+	} else if (ci->lastPosSaveTime != cg.time) {
+		ci->lastPosSaveTime = 0;
+	}
+
+	// push frozen state into clientinfo
+	// we need that in CG_RunLerpFrame :X
+	if (CG_FreezeTag() && cent->currentState.powerups & (1 << PW_FREEZE))
+		ci->ftIsFrozen = qtrue;
+	else
+		ci->ftIsFrozen = qfalse;
+
 	//
 	// add the gun / barrel / flash
 	//
@@ -2426,6 +2485,7 @@ void CG_Player(centity_t *cent) {
 	// add the bounding box (if cg_drawBBox is 1)
 	CG_AddBoundingBox(cent);
 	// unlagged - client options
+	CG_PlayerFrozen(cent, &legs);
 }
 
 //=====================================================================

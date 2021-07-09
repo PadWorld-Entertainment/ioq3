@@ -92,12 +92,13 @@ enum { FORCEMODEL_ENEMY = 1, FORCEMODEL_TEAM = 2 };
 
 typedef enum {
 	FOOTSTEP_NORMAL,
-	FOOTSTEP_BOOT,
+	FOOTSTEP_SPURS,
 	FOOTSTEP_FLESH,
 	FOOTSTEP_MECH,
 	FOOTSTEP_ENERGY,
 	FOOTSTEP_METAL,
 	FOOTSTEP_SPLASH,
+	FOOTSTEP_WADE,
 
 	FOOTSTEP_CARPET,
 	FOOTSTEP_LATTICE,
@@ -406,6 +407,8 @@ typedef struct {
 
 	qboolean glowModel;
 	byte glowColor[4];
+
+	qboolean ftIsFrozen;
 } clientInfo_t;
 
 // each WP_* weapon enum has an associated weaponInfo_t
@@ -477,7 +480,7 @@ typedef struct {
 
 #define MAX_PREDICTED_EVENTS 16
 
-#define MAX_CHATMESSAGES 4
+#define MAX_CHATMESSAGES 8
 
 typedef struct {
 	int clientFrame; // incremented each frame
@@ -761,6 +764,10 @@ typedef struct {
 	qhandle_t BerserkerScreenShader;
 	qhandle_t WetScreenShader;
 
+	// freezetag
+	qhandle_t FreezeScreenShader;
+	qhandle_t iceblockModel;
+
 	qhandle_t tracerShader;
 	qhandle_t crosshairShader[NUM_CROSSHAIRS];
 	qhandle_t lagometerShader;
@@ -789,6 +796,11 @@ typedef struct {
 
 	// powerup shaders
 	qhandle_t invisShader;
+
+	// freezetag
+	qhandle_t snowMarkShader;
+	qhandle_t freezeIconShader;
+	qhandle_t thawIcon;
 
 	qhandle_t lpsIcon;
 	qhandle_t lpsIconLead;
@@ -847,7 +859,7 @@ typedef struct {
 	qhandle_t zoomKMAaura;
 	qhandle_t zoomKMAbluescreen;
 
-	qhandle_t SchaumShader;
+	qhandle_t foamMarkShader;
 	qhandle_t StationRingShader;
 	qhandle_t PadPowerShader;
 	qhandle_t PunchyPadPowerSkin;
@@ -968,8 +980,8 @@ typedef struct {
 
 	// scoreboard headers
 	qhandle_t scoreboardBG;
-	qhandle_t scoreboardlivesleft;
-	qhandle_t scoreboardscore_lives;
+	qhandle_t scoreboardLives;
+	qhandle_t scoreboardScoreLives;
 
 	qhandle_t scoreboardName;
 	qhandle_t scoreboardPing;
@@ -1259,6 +1271,7 @@ extern vmCvar_t cg_drawCrosshair;
 extern vmCvar_t cg_drawCrosshairNames;
 extern vmCvar_t cg_drawRewards;
 extern vmCvar_t cg_drawTeamOverlay;
+extern vmCvar_t cg_fovAspectAdjust;
 extern vmCvar_t cg_teamOverlayUserinfo;
 extern vmCvar_t cg_crosshairX;
 extern vmCvar_t cg_crosshairY;
@@ -1356,7 +1369,13 @@ extern vmCvar_t cg_drawBBox;
 
 extern vmCvar_t cg_ambient;
 
+extern vmCvar_t cg_chatHeight;
+extern vmCvar_t cg_drawChatIcon;
+
 extern vmCvar_t cg_icons;
+
+extern vmCvar_t cg_ft_thawerIconX;
+extern vmCvar_t cg_ft_thawerIconY;
 
 //
 // cg_main.c
@@ -1434,7 +1453,7 @@ void CG_DrawRect(float x, float y, float width, float height, float size, const 
 void CG_DrawSides(float x, float y, float w, float h, float size);
 void CG_DrawTopBottom(float x, float y, float w, float h, float size);
 
-qboolean CG_WorldToScreen(vec3_t point, float *x, float *y);
+qboolean CG_WorldToScreen(const vec3_t point, float *x, float *y);
 
 //
 // cg_draw.c
@@ -1631,6 +1650,13 @@ void Main_SpriteParticles(void);
 // wop_advanced2d.c
 //
 #include "wopc_advanced2d.h"
+
+//
+// cg_freezetag.c
+//
+qboolean CG_FreezeTag(void);
+qboolean FT_LocalIsFrozen(void);
+qboolean FT_PlayerIsFrozen(const centity_t *cent);
 
 //
 // cg_cutscene2d.c
